@@ -17,6 +17,6 @@ public class CompanyQueryServiceImpl implements CompanyQueryService {
 
     @Override
     public Optional<Company> handle(GetCompanyByIdQuery query) {
-        return Optional.empty();
+        return companyRepository.findById(query.companyId());
     }
 }
