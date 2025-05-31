@@ -37,19 +37,19 @@ public class GrowRoomController {
     /**
      * Create a grow room
      *
-     * @param createGrowRoomResource The Grow Room to be created
-     * @return The { @link growRoomResource} resource for the created growRoom
+     * @param createGrowRoomResource The grow room to be created
+     * @return The { @link growRoomResource} resource for the created grow room
      */
     @PostMapping
     @Operation(
-            summary = "Create a new Grow Room",
-            description = "Creates a new Grow Room with the provided details and returns the created grow room resource.",
-            tags = {"Companies"}
+            summary = "Create a new grow room",
+            description = "Creates a new grow room with the provided details and returns the created grow room resource.",
+            tags = {"Grow Rooms"}
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Grow Room created successfully",
+            @ApiResponse(responseCode = "200", description = "Grow room created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = GrowRoomResource.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input or unable to create Grow Room",
+            @ApiResponse(responseCode = "400", description = "Invalid input or unable to create grow room",
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<GrowRoomResource> createGrowRoom(@RequestBody CreateGrowRoomResource createGrowRoomResource) {
@@ -74,15 +74,19 @@ public class GrowRoomController {
     /**
      * Update Grow Room
      *
-     * @param growRoomId The growRoom id
-     * @param resource    The {@link UpdateGrowRoomResource} instance
+     * @param growRoomId The grow room id
+     * @param resource   The {@link UpdateGrowRoomResource} instance
      * @return The {@link GrowRoomResource} resource for the updated growRoom
      */
     @PutMapping("/{growRoomId}")
-    @Operation(summary = "Update Grow Room", description = "Update Grow Room")
+    @Operation(
+            summary = "Update grow room",
+            description = "Update grow room",
+            tags = {"Grow Rooms"}
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Grow Room updated"),
-            @ApiResponse(responseCode = "404", description = "Grow Room not found")})
+            @ApiResponse(responseCode = "200", description = "Grow room updated"),
+            @ApiResponse(responseCode = "404", description = "Grow room not found")})
     public ResponseEntity<GrowRoomResource> updateGrowRoom(@PathVariable Long growRoomId, @RequestBody UpdateGrowRoomResource resource) {
         var updateGrowRoomCommand = UpdateGrowRoomCommandFromResourceAssembler.toCommandFromResource(growRoomId, resource);
         var updatedGrowRoom = growRoomCommandService.handle(updateGrowRoomCommand);
@@ -100,14 +104,14 @@ public class GrowRoomController {
     @Operation(
             summary = "Get grow rooms by company ID",
             description = "Retrieves a list of grow rooms by the provided company ID.",
-            tags = {"Companies"}
+            tags = {"Grow Rooms"}
     )
     public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@RequestParam Long companyId) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
         var growRooms = growRoomQueryService.handle(query);
 
         if (growRooms.isEmpty()) {
-            return ResponseEntity.noContent().build();  // O ResponseEntity.ok(Collections.emptyList());
+            return ResponseEntity.noContent().build();
         }
 
         var resources = growRooms.stream()
@@ -116,5 +120,4 @@ public class GrowRoomController {
 
         return ResponseEntity.ok(resources);
     }
-
 }
