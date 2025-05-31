@@ -35,7 +35,6 @@ public class Company extends AuditableAbstractAggregateRoot<Company> {
         return taxIdentificationNumber.taxIdentificationNumber();
     }
 
-
     /**
      * Update company information.
      * @param name Company name.
@@ -47,5 +46,4 @@ public class Company extends AuditableAbstractAggregateRoot<Company> {
         this.taxIdentificationNumber = taxIdentificationNumber;
         return this;
     }
-
 }

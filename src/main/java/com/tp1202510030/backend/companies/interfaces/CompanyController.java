@@ -8,7 +8,7 @@ import com.tp1202510030.backend.companies.interfaces.rest.resources.company.Crea
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.UpdateCompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CompanyResourceFromEntityAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CreateCompanyCommandFromResourceAssembler;
-import com.tp1202510030.backend.companies.interfaces.rest.transform.company.UpdateCompanyCommandResourceFromEntityAssembler;
+import com.tp1202510030.backend.companies.interfaces.rest.transform.company.UpdateCompanyCommandFromResourceAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -81,7 +81,7 @@ public class CompanyController {
             @ApiResponse(responseCode = "200", description = "Company updated"),
             @ApiResponse(responseCode = "404", description = "Company not found")})
     public ResponseEntity<CompanyResource> updateCompany(@PathVariable Long companyId, @RequestBody UpdateCompanyResource resource) {
-        var updateCompanyCommand = UpdateCompanyCommandResourceFromEntityAssembler.toCommandFromResource(companyId, resource);
+        var updateCompanyCommand = UpdateCompanyCommandFromResourceAssembler.toCommandFromResource(companyId, resource);
         var updatedCompany = companyCommandService.handle(updateCompanyCommand);
 
         if (updatedCompany.isEmpty()) {
@@ -110,5 +110,4 @@ public class CompanyController {
         var companyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(company.get());
         return ResponseEntity.ok(companyResource);
     }
-
 }
