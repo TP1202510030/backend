@@ -41,8 +41,5 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
         this.sensorActivationFrequencyInMinutes = sensorActivationFrequencyInMinutes;
         this.growRoom = growRoom;
         this.phases = phases;
-        if (phases != null) {
-            phases.forEach(phase -> phase.setCrop(this));
-        }
     }
 }
