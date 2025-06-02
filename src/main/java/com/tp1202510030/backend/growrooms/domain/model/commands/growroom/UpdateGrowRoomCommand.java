@@ -1,6 +1,5 @@
 package com.tp1202510030.backend.growrooms.domain.model.commands.growroom;
 
-import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowRoomName;
 
 public record UpdateGrowRoomCommand(Long growRoomId, GrowRoomName name, String imageUrl, Long companyId) {
