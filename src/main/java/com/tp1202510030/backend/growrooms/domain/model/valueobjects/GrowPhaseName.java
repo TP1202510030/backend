@@ -3,14 +3,14 @@ package com.tp1202510030.backend.growrooms.domain.model.valueobjects;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public record GrowRoomName(String name) {
-    public GrowRoomName() {
+public record GrowPhaseName(String name) {
+    public GrowPhaseName() {
         this(null);
     }
 
-    public GrowRoomName {
+    public GrowPhaseName {
         if (name == null) {
-            throw new IllegalArgumentException("Grow room name cannot be null or empty");
+            throw new IllegalArgumentException("Grow phase name cannot be null or empty");
         }
     }
 }
