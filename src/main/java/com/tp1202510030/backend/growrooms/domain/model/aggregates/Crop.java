@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     private Date endDate;
 
     @Getter
-    private Integer sensorActivationFrequencyInMinutes;
+    private Duration sensorActivationFrequency;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "grow_room_id")
@@ -35,10 +36,10 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
 
     public Crop() {}
 
-    public Crop(Date startDate, Date endDate, Integer sensorActivationFrequencyInMinutes, GrowRoom growRoom, List<CropPhase> phases) {
+    public Crop(Date startDate, Date endDate, Duration sensorActivationFrequency, GrowRoom growRoom, List<CropPhase> phases) {
         this.startDate = startDate;
         this.endDate = endDate;
-        this.sensorActivationFrequencyInMinutes = sensorActivationFrequencyInMinutes;
+        this.sensorActivationFrequency = sensorActivationFrequency;
         this.growRoom = growRoom;
         this.phases = phases;
     }

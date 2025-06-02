@@ -4,10 +4,17 @@ import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowPhaseName;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ParameterThresholds;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Data
+@NoArgsConstructor
 public class CropPhase {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,27 +22,25 @@ public class CropPhase {
     private Long id;
 
     @Getter
-    @Setter
     private GrowPhaseName name;
 
     @Getter
-    @Setter
-    private Integer durationInDays;
+    private Duration duration;
 
     @Embedded
     @Getter
-    @Setter
     private ParameterThresholds thresholds;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")
     private Crop crop;
 
-    public CropPhase() {}
+    @OneToMany(mappedBy = "cropPhase", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Measurement> measurements = new ArrayList<>();
 
-    public CropPhase(String name, Integer durationInDays, ParameterThresholds thresholds) {
+    public CropPhase(String name, Duration duration, ParameterThresholds thresholds) {
         this.name = new GrowPhaseName(name);
-        this.durationInDays = durationInDays;
+        this.duration = duration;
         this.thresholds = thresholds;
     }
 }
