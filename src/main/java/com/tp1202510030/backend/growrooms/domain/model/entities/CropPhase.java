@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class CropPhase {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")
+    @Setter
     private Crop crop;
 
     @OneToMany(mappedBy = "cropPhase", cascade = CascadeType.ALL, orphanRemoval = true)

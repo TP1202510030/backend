@@ -45,6 +45,11 @@ public class CropCommandServiceImpl implements CropCommandService {
                 cropPhases
         );
 
+        if (!cropPhases.isEmpty()) {
+            crop.updateCurrentPhase(cropPhases.getFirst());
+            cropPhases.forEach(phase -> phase.setCrop(crop));
+        }
+
         cropRepository.save(crop);
         return crop.getId();
     }
