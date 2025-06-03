@@ -12,5 +12,7 @@ public record CropResource(
         Date endDate,
         Duration sensorActivationFrequency,
         Long growRoomId,
-        List<CropPhaseResource> phases
-) {}
+        List<CropPhaseResource> phases,
+        CropPhaseResource currentPhase
+) {
+}

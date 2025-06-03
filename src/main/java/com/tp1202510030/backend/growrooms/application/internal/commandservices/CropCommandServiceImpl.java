@@ -1,6 +1,7 @@
 package com.tp1202510030.backend.growrooms.application.internal.commandservices;
 
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
+import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCropPhaseCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.CreateCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.entities.CropPhase;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
@@ -52,5 +53,39 @@ public class CropCommandServiceImpl implements CropCommandService {
 
         cropRepository.save(crop);
         return crop.getId();
+    }
+
+    @Override
+    public void handle(AdvanceCropPhaseCommand command) {
+        var cropOpt = cropRepository.findById(command.cropId());
+        if (cropOpt.isEmpty()) {
+            throw new IllegalArgumentException("Crop with ID " + command.cropId() + " not found");
+        }
+
+        var crop = cropOpt.get();
+        List<CropPhase> phases = crop.getPhases();
+
+        if (phases == null || phases.isEmpty()) {
+            throw new IllegalStateException("Crop with ID " + command.cropId() + " has no phases");
+        }
+
+        var currentPhase = crop.getCurrentPhase();
+
+        int currentIndex = -1;
+        if (currentPhase != null) {
+            currentIndex = phases.indexOf(currentPhase);
+            if (currentIndex == -1) {
+                throw new IllegalStateException("Current phase is not in the list of phases");
+            }
+        }
+
+        if (currentIndex >= phases.size() - 1) {
+            throw new IllegalStateException("Already at the last phase, cannot advance further");
+        }
+
+        CropPhase nextPhase = phases.get(currentIndex + 1);
+        crop.updateCurrentPhase(nextPhase);
+
+        cropRepository.save(crop);
     }
 }

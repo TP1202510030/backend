@@ -7,7 +7,7 @@ import java.util.List;
 
 public class AddMeasurementsToCurrentPhaseCommandFromResourceAssembler {
 
-    public static AddMeasurementsToCurrentPhaseCommand toCommand(Long cropId, List<CreateMeasurementResource> measurementResources) {
+    public static AddMeasurementsToCurrentPhaseCommand toCommandFromResourceAssembler(Long cropId, List<CreateMeasurementResource> measurementResources) {
         List<AddMeasurementsToCurrentPhaseCommand.MeasurementEntry> entries = measurementResources.stream()
                 .map(resource -> new AddMeasurementsToCurrentPhaseCommand.MeasurementEntry(
                         resource.parameter(),

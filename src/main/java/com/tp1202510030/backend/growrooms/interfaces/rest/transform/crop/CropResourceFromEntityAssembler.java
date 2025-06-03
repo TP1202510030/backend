@@ -13,13 +13,19 @@ public class CropResourceFromEntityAssembler {
                 .map(CropPhaseResourceFromEntityAssembler::toResourceFromEntity)
                 .toList();
 
+        CropPhaseResource currentPhaseResource = null;
+        if (entity.getCurrentPhase() != null) {
+            currentPhaseResource = CropPhaseResourceFromEntityAssembler.toResourceFromEntity(entity.getCurrentPhase());
+        }
+
         return new CropResource(
                 entity.getId(),
                 entity.getStartDate(),
                 entity.getEndDate(),
                 entity.getSensorActivationFrequency(),
                 entity.getGrowRoom().getId(),
-                phaseResources
+                phaseResources,
+                currentPhaseResource
         );
     }
 }
