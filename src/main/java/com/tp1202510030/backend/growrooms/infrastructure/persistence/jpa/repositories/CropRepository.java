@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CropRepository extends JpaRepository<Crop, Long> {
     List<Crop> findByEndDateIsNotNull();
+    List<Crop> findAllByGrowRoomId(Long growRoomId);
 }
