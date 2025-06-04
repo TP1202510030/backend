@@ -79,7 +79,7 @@ public class CropController {
     @Operation(
             summary = "Advance the crop phase",
             description = "Advances the current phase of the specified crop to the next phase.",
-            tags = {"Measurements"}
+            tags = {"Crops"}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Crop phase advanced successfully"),

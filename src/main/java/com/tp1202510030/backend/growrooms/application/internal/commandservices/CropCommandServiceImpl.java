@@ -10,6 +10,7 @@ import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQuery
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -80,7 +81,12 @@ public class CropCommandServiceImpl implements CropCommandService {
         }
 
         if (currentIndex >= phases.size() - 1) {
-            throw new IllegalStateException("Already at the last phase, cannot advance further");
+            if (crop.getEndDate() == null) {
+                crop.setEndDate(new Date());
+            }
+            crop.updateCurrentPhase(currentPhase);
+            cropRepository.save(crop);
+            return;
         }
 
         CropPhase nextPhase = phases.get(currentIndex + 1);

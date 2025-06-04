@@ -23,6 +23,7 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     private Date startDate;
 
     @Getter
+    @Setter
     private Date endDate;
 
     @Getter
@@ -43,7 +44,8 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     @Setter
     private CropPhase currentPhase;
 
-    public Crop() {}
+    public Crop() {
+    }
 
     public Crop(Date startDate, Date endDate, Duration sensorActivationFrequency, GrowRoom growRoom, List<CropPhase> phases) {
         this.startDate = startDate;
