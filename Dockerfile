@@ -1,9 +1,24 @@
-FROM openjdk:22-jdk-slim
+FROM openjdk:22-jdk-slim AS build
 LABEL authors="alanegd"
 
-ARG JAR_FILE=target/backend-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
+RUN apt-get update && apt-get install -y maven
+
+WORKDIR /app
+
+COPY pom.xml .
+
+RUN mvn dependency:go-offline
+
+COPY src ./src
+
+RUN mvn clean package -DskipTests
+
+FROM openjdk:22-jdk-slim
+
+WORKDIR /app s
+
+COPY --from=build /app/target/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
 EXPOSE 3000
-
-ENTRYPOINT ["java","-jar","/app.jar"]
