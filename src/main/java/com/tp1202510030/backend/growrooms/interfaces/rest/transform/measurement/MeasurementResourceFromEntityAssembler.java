@@ -9,9 +9,7 @@ public class MeasurementResourceFromEntityAssembler {
         return new MeasurementResource(
                 entity.getId(),
                 entity.getParameter(),
-                entity.getValue(),
-                entity.getTimestamp(),
-                entity.getCropPhase().getId()
+                entity.getValue()
         );
     }
 }

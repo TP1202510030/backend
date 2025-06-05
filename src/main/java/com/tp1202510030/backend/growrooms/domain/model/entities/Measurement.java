@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.Instant;
+import java.util.Date;
 
 @Entity
 @Data
@@ -24,16 +24,16 @@ public class Measurement {
     private Double value;
 
     @Getter
-    private Instant timestamp;
+    private Date timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_phase_id", nullable = false)
     private CropPhase cropPhase;
 
-    public Measurement(Parameters parameter, Double value, Instant timestamp, CropPhase cropPhase) {
+    public Measurement(Parameters parameter, Double value, CropPhase cropPhase) {
         this.parameter = parameter;
         this.value = value;
-        this.timestamp = timestamp;
+        this.timestamp = new Date();
         this.cropPhase = cropPhase;
     }
 }

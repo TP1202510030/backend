@@ -11,8 +11,7 @@ public class AddMeasurementsToCurrentPhaseCommandFromResourceAssembler {
         List<AddMeasurementsToCurrentPhaseCommand.MeasurementEntry> entries = measurementResources.stream()
                 .map(resource -> new AddMeasurementsToCurrentPhaseCommand.MeasurementEntry(
                         resource.parameter(),
-                        resource.value(),
-                        resource.timestamp()
+                        resource.value()
                 ))
                 .toList();
 
