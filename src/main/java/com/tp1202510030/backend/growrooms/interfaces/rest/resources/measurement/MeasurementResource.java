@@ -8,6 +8,7 @@ public record MeasurementResource(
         Long id,
         Parameters parameter,
         Double value,
+        String unitOfMeasurement,
         Date timestamp,
         Long cropPhaseId
 ) {

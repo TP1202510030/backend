@@ -10,6 +10,7 @@ public class MeasurementResourceFromEntityAssembler {
                 entity.getId(),
                 entity.getParameter(),
                 entity.getValue(),
+                entity.getUnitOfMeasurement(),
                 entity.getTimestamp(),
                 entity.getCropPhase().getId()
         );

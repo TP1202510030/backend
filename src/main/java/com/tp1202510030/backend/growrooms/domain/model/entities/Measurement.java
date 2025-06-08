@@ -24,15 +24,19 @@ public class Measurement {
     private Double value;
 
     @Getter
+    private String unitOfMeasurement;
+
+    @Getter
     private Date timestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_phase_id", nullable = false)
     private CropPhase cropPhase;
 
-    public Measurement(Parameters parameter, Double value, CropPhase cropPhase) {
+    public Measurement(Parameters parameter, Double value, String unitOfMeasurement, CropPhase cropPhase) {
         this.parameter = parameter;
         this.value = value;
+        this.unitOfMeasurement = unitOfMeasurement;
         this.timestamp = new Date();
         this.cropPhase = cropPhase;
     }

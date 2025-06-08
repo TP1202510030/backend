@@ -23,7 +23,6 @@ public class GrowRoomResourceFromEntityAssembler {
                 entity.getId(),
                 entity.getGrowRoomName(),
                 entity.getImageUrl(),
-                entity.getCompany(),
                 latestMeasurements
         );
     }

@@ -31,7 +31,10 @@ public class MeasurementCommandServiceImpl implements MeasurementCommandService 
         }
 
         var measurements = command.measurements().stream()
-                .map(m -> new Measurement(m.parameter(), m.value(), currentPhase))
+                .map(m -> {
+                    String unit = m.parameter().getUnit();
+                    return new Measurement(m.parameter(), m.value(), unit, currentPhase);
+                })
                 .toList();
 
         try {

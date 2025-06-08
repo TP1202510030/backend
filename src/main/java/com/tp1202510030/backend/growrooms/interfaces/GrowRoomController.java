@@ -100,13 +100,13 @@ public class GrowRoomController {
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
 
-    @GetMapping("/{companyId}")
+    @GetMapping
     @Operation(
             summary = "Get grow rooms by company ID",
             description = "Retrieves a list of grow rooms by the provided company ID.",
             tags = {"Grow Rooms"}
     )
-    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@PathVariable Long companyId) {
+    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@RequestParam Long companyId) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
         var growRooms = growRoomQueryService.handle(query);
 
