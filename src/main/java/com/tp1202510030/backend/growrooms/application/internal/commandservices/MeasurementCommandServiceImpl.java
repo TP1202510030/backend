@@ -34,6 +34,11 @@ public class MeasurementCommandServiceImpl implements MeasurementCommandService 
                 .map(m -> new Measurement(m.parameter(), m.value(), currentPhase))
                 .toList();
 
-        measurementRepository.saveAll(measurements);
+        try {
+            measurementRepository.saveAll(measurements);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while saving measurements: " + e.getMessage(), e);
+        }
     }
+
 }

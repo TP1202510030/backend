@@ -29,16 +29,16 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     @Getter
     private Duration sensorActivationFrequency;
 
-    @Getter
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "grow_room_id")
+    @Getter
     private GrowRoom growRoom;
 
     @Getter
     @OneToMany(mappedBy = "crop", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CropPhase> phases;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "current_phase_id")
     @Getter
     @Setter

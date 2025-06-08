@@ -1,7 +1,8 @@
 package com.tp1202510030.backend.growrooms.interfaces;
 
 import com.tp1202510030.backend.growrooms.domain.model.entities.Measurement;
-import com.tp1202510030.backend.growrooms.domain.model.queries.measurement.GetAllMeasurementsByCropPhaseId;
+import com.tp1202510030.backend.growrooms.domain.model.queries.measurement.GetAllMeasurementsByCropPhaseIdQuery;
+import com.tp1202510030.backend.growrooms.domain.model.queries.measurement.GetMeasurementsForCurrentPhaseByCropIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.measurement.MeasurementCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.measurement.MeasurementQueryService;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CropResource;
@@ -86,7 +87,33 @@ public class MeasurementController {
             @ApiResponse(responseCode = "204", description = "No measurements found for the grow room")
     })
     public ResponseEntity<List<MeasurementResource>> getCropsByGrowRoomId(@RequestParam Long cropPhaseId) {
-        var query = new GetAllMeasurementsByCropPhaseId(cropPhaseId);
+        var query = new GetAllMeasurementsByCropPhaseIdQuery(cropPhaseId);
+        List<Measurement> measurements = measurementQueryService.handle(query);
+
+        if (measurements.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        var resources = measurements.stream()
+                .map(MeasurementResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+
+        return ResponseEntity.ok(resources);
+    }
+
+    @GetMapping("/{cropId}")
+    @Operation(
+            summary = "Get measurements for the current phase of a crop",
+            description = "Retrieve all measurements for the current phase of a crop by its ID.",
+            tags = {"Measurements"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
+            @ApiResponse(responseCode = "404", description = "Crop not found or no current phase available")
+    })
+    public ResponseEntity<List<MeasurementResource>> getMeasurementsForCurrentPhase(
+            @PathVariable Long cropId) {
+        var query = new GetMeasurementsForCurrentPhaseByCropIdQuery(cropId);
         List<Measurement> measurements = measurementQueryService.handle(query);
 
         if (measurements.isEmpty()) {

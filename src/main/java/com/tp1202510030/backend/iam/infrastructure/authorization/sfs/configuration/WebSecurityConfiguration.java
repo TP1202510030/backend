@@ -6,7 +6,6 @@ import com.tp1202510030.backend.iam.infrastructure.tokens.jwt.BearerTokenService
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -92,7 +91,7 @@ public class WebSecurityConfiguration {
         // Authorize requests configuration
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(permittedRequestPatterns).permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/grow_rooms").hasRole("ADMIN")
+                //.requestMatchers(HttpMethod.GET, "/api/v1/grow_rooms").hasRole("ADMIN")
                 .anyRequest().permitAll()
         );
         http.authenticationProvider(authenticationProvider());

@@ -39,6 +39,11 @@ public class CropCommandServiceImpl implements CropCommandService {
                 ))
                 .toList();
 
+        boolean hasActiveCrop = cropRepository.findFirstByGrowRoomIdAndEndDateIsNull(growRoom.getId()).isPresent();
+        if (hasActiveCrop) {
+            throw new IllegalStateException("Grow room with ID " + command.growRoomId() + " already has an active crop");
+        }
+
         var crop = new Crop(
                 command.startDate(),
                 command.endDate(),

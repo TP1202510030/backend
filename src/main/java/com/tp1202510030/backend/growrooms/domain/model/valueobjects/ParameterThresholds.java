@@ -40,5 +40,27 @@ public class ParameterThresholds {
         this.soilMoistureMin = soilMoistureMin;
         this.soilMoistureMax = soilMoistureMax;
     }
+
+    public double getMinimum(Parameters parameter) {
+        return switch (parameter) {
+            case AIR_TEMPERATURE -> airTemperatureMin;
+            case AIR_HUMIDITY -> airHumidityMin;
+            case CARBON_DIOXIDE -> carbonDioxideMin;
+            case SOIL_TEMPERATURE -> soilTemperatureMin;
+            case SOIL_MOISTURE -> soilMoistureMin;
+            default -> throw new IllegalArgumentException("Unknown parameter " + parameter);
+        };
+    }
+
+    public double getMaximum(Parameters parameter) {
+        return switch (parameter) {
+            case AIR_TEMPERATURE -> airTemperatureMax;
+            case AIR_HUMIDITY -> airHumidityMax;
+            case CARBON_DIOXIDE -> carbonDioxideMax;
+            case SOIL_TEMPERATURE -> soilTemperatureMax;
+            case SOIL_MOISTURE -> soilMoistureMax;
+            default -> throw new IllegalArgumentException("Unknown parameter" + parameter);
+        };
+    }
 }
 
