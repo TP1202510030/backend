@@ -1,11 +1,11 @@
 package com.tp1202510030.backend.growrooms.interfaces;
 
-import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.CreateGrowRoomResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.GrowRoomResource;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
+import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.CreateGrowRoomResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.GrowRoomResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.UpdateGrowRoomResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.CreateGrowRoomCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.GrowRoomResourceFromEntityAssembler;
@@ -52,8 +52,8 @@ public class GrowRoomController {
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to create grow room",
                     content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<GrowRoomResource> createGrowRoom(@RequestBody CreateGrowRoomResource createGrowRoomResource) {
-        var createGrowRoomCommand = CreateGrowRoomCommandFromResourceAssembler.toCommandFromResource(createGrowRoomResource);
+    public ResponseEntity<GrowRoomResource> createGrowRoom(@RequestParam Long companyId, @RequestBody CreateGrowRoomResource createGrowRoomResource) {
+        var createGrowRoomCommand = CreateGrowRoomCommandFromResourceAssembler.toCommandFromResource(createGrowRoomResource, companyId);
         var growRoomId = growRoomCommandService.handle(createGrowRoomCommand);
 
         if (growRoomId == 0L) {
@@ -100,13 +100,13 @@ public class GrowRoomController {
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
 
-    @GetMapping
+    @GetMapping("/{companyId}")
     @Operation(
             summary = "Get grow rooms by company ID",
             description = "Retrieves a list of grow rooms by the provided company ID.",
             tags = {"Grow Rooms"}
     )
-    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@RequestParam Long companyId) {
+    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@PathVariable Long companyId) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
         var growRooms = growRoomQueryService.handle(query);
 

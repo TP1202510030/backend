@@ -14,7 +14,6 @@ import java.util.List;
                       "startDate": "2025-06-03T19:59:39.612Z",
                       "endDate": "",
                       "sensorActivationFrequency": "PT5H30M15S",
-                      "growRoomId": 1,
                       "phases": [
                         {
                           "name": "Incubation",

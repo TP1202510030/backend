@@ -55,8 +55,8 @@ public class CropController {
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to create crop",
                     content = @Content(mediaType = "application/json"))
     })
-    public ResponseEntity<CropResource> createCrop(@RequestBody CreateCropResource createCropResource) {
-        var createCropCommand = CreateCropCommandFromResourceAssembler.toCommandFromResource(createCropResource);
+    public ResponseEntity<CropResource> createCrop(@RequestParam Long growRoomId, @RequestBody CreateCropResource createCropResource) {
+        var createCropCommand = CreateCropCommandFromResourceAssembler.toCommandFromResource(createCropResource, growRoomId);
         var cropId = cropCommandService.handle(createCropCommand);
 
         if (cropId == 0L) {

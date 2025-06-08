@@ -8,7 +8,7 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.transform.cropphase.Cr
 import java.util.List;
 
 public class CreateCropCommandFromResourceAssembler {
-    public static CreateCropCommand toCommandFromResource(CreateCropResource resource) {
+    public static CreateCropCommand toCommandFromResource(CreateCropResource resource, Long growRoomId) {
         List<CreateCropPhaseCommand> phases = resource.phases().stream()
                 .map(CreateCropPhaseCommandFromResourceAssembler::toCommandFromResource)
                 .toList();
@@ -17,7 +17,7 @@ public class CreateCropCommandFromResourceAssembler {
                 resource.startDate(),
                 resource.endDate(),
                 resource.sensorActivationFrequency(),
-                resource.growRoomId(),
+                growRoomId,
                 phases
         );
     }
