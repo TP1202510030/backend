@@ -11,8 +11,10 @@ import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.reposit
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.MeasurementRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
@@ -40,16 +42,28 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
             if (activeCrop.isPresent()) {
                 Crop crop = activeCrop.get();
                 if (crop.getCurrentPhase() != null) {
-                    Measurement lastMeasurement = measurementRepository.findTopByCropPhaseIdOrderByTimestampDesc(crop.getCurrentPhase().getId());
-                    if (lastMeasurement != null) {
-                        growRoom.setLatestMeasurement(lastMeasurement);
+                    List<Measurement> lastMeasurements = measurementRepository
+                            .findAllByCropPhaseIdOrderByTimestampDesc(crop.getCurrentPhase().getId())
+                            .stream()
+                            .filter(m -> m.getTimestamp().equals(getLastMeasurementTimestamp(crop.getCurrentPhase().getId())))
+                            .collect(Collectors.toList());
+
+                    if (!lastMeasurements.isEmpty()) {
+                        growRoom.setLatestMeasurements(lastMeasurements);
                     }
                 } else {
-                    growRoom.setLatestMeasurement(null);
+                    growRoom.setLatestMeasurements(null);
                 }
             }
         });
-
         return growRooms;
+    }
+
+    private Date getLastMeasurementTimestamp(Long cropPhaseId) {
+        List<Measurement> measurements = measurementRepository.findAllByCropPhaseId(cropPhaseId);
+        return measurements.stream()
+                .map(Measurement::getTimestamp)
+                .max(Date::compareTo)
+                .orElse(null);
     }
 }

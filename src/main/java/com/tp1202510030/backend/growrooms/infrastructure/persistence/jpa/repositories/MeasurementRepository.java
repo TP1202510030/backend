@@ -10,5 +10,5 @@ import java.util.List;
 public interface MeasurementRepository extends JpaRepository<Measurement, Long> {
     List<Measurement> findAllByCropPhaseId(Long cropPhaseId);
 
-    Measurement findTopByCropPhaseIdOrderByTimestampDesc(Long cropPhaseId);
+    List<Measurement> findAllByCropPhaseIdOrderByTimestampDesc(Long cropPhaseId);
 }

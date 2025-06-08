@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
@@ -28,14 +31,11 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
     @Getter
     private Company company;
 
-    @OneToMany(mappedBy = "growRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Getter
-    private java.util.List<Crop> crops;
-
-    @Transient
     @Setter
     @Getter
-    private Measurement latestMeasurement;
+    @Transient
+    private List<Measurement> latestMeasurements = new ArrayList<>();
+    ;
 
     public GrowRoom() {
     }
