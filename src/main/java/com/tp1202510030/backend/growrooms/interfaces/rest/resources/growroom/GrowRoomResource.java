@@ -8,6 +8,7 @@ public record GrowRoomResource(
         Long id,
         String name,
         String imageUrl,
-        List<MeasurementResource> latestMeasurements
+        List<MeasurementResource> latestMeasurements,
+        boolean hasActiveCrop
 ) {
 }

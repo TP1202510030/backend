@@ -35,7 +35,8 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
     @Getter
     @Transient
     private List<Measurement> latestMeasurements = new ArrayList<>();
-    ;
+
+    private boolean hasActiveCrop;
 
     public GrowRoom() {
     }
@@ -44,6 +45,7 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
         this.name = new GrowRoomName(name);
         this.imageUrl = imageUrl;
         this.company = company;
+        this.hasActiveCrop = false;
     }
 
     /**
@@ -63,5 +65,17 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
 
     public String getGrowRoomName() {
         return this.name.name();
+    }
+
+    public boolean getHasActiveCrop() {
+        return this.hasActiveCrop;
+    }
+
+    public void activateCrop() {
+        this.hasActiveCrop = true;
+    }
+
+    public void deactivateCrop() {
+        this.hasActiveCrop = false;
     }
 }

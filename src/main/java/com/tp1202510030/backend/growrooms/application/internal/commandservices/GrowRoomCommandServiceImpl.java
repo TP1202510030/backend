@@ -3,7 +3,9 @@ package com.tp1202510030.backend.growrooms.application.internal.commandservices;
 import com.tp1202510030.backend.companies.domain.model.queries.company.GetCompanyByIdQuery;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyQueryService;
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.GrowRoom;
+import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.ActivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.CreateGrowRoomCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeactivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.UpdateGrowRoomCommand;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowRoomName;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
@@ -73,6 +75,28 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
         } catch (Exception e) {
             throw new IllegalArgumentException("Error updating grow room: %s".formatted(e.getMessage()));
         }
+    }
+
+    @Override
+    public void handle(ActivateGrowRoomCropCommand command) {
+        var growRoomOpt = growRoomRepository.findById(command.growRoomId());
+        if (growRoomOpt.isEmpty()) {
+            throw new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found");
+        }
+        var growRoom = growRoomOpt.get();
+        growRoom.activateCrop();
+        growRoomRepository.save(growRoom);
+    }
+
+    @Override
+    public void handle(DeactivateGrowRoomCropCommand command) {
+        var growRoomOpt = growRoomRepository.findById(command.growRoomId());
+        if (growRoomOpt.isEmpty()) {
+            throw new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found");
+        }
+        var growRoom = growRoomOpt.get();
+        growRoom.deactivateCrop();
+        growRoomRepository.save(growRoom);
     }
 }
 

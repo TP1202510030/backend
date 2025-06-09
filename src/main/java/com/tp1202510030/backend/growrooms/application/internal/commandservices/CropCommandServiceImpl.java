@@ -3,9 +3,12 @@ package com.tp1202510030.backend.growrooms.application.internal.commandservices;
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCropPhaseCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.CreateCropCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.ActivateGrowRoomCropCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeactivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.entities.CropPhase;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropCommandService;
+import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import org.springframework.stereotype.Service;
@@ -17,10 +20,12 @@ import java.util.List;
 public class CropCommandServiceImpl implements CropCommandService {
     private final CropRepository cropRepository;
     private final GrowRoomQueryService growRoomQueryService;
+    private final GrowRoomCommandService growRoomCommandService;
 
-    public CropCommandServiceImpl(CropRepository cropRepository, GrowRoomQueryService growRoomQueryService) {
+    public CropCommandServiceImpl(CropRepository cropRepository, GrowRoomQueryService growRoomQueryService, GrowRoomCommandService growRoomCommandService) {
         this.cropRepository = cropRepository;
         this.growRoomQueryService = growRoomQueryService;
+        this.growRoomCommandService = growRoomCommandService;
     }
 
     @Override
@@ -30,6 +35,10 @@ public class CropCommandServiceImpl implements CropCommandService {
             throw new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found");
         }
         var growRoom = growRoomOpt.get();
+        
+        if (growRoom.getHasActiveCrop()) {
+            throw new IllegalStateException("Grow room with ID " + command.growRoomId() + " already has an active crop");
+        }
 
         List<CropPhase> cropPhases = command.phases().stream()
                 .map(phaseCmd -> new CropPhase(
@@ -38,11 +47,6 @@ public class CropCommandServiceImpl implements CropCommandService {
                         phaseCmd.parameterThresholds()
                 ))
                 .toList();
-
-        boolean hasActiveCrop = cropRepository.findFirstByGrowRoomIdAndEndDateIsNull(growRoom.getId()).isPresent();
-        if (hasActiveCrop) {
-            throw new IllegalStateException("Grow room with ID " + command.growRoomId() + " already has an active crop");
-        }
 
         var crop = new Crop(
                 command.startDate(),
@@ -58,6 +62,9 @@ public class CropCommandServiceImpl implements CropCommandService {
         }
 
         cropRepository.save(crop);
+
+        growRoomCommandService.handle(new ActivateGrowRoomCropCommand(growRoom.getId()));
+
         return crop.getId();
     }
 
@@ -91,6 +98,11 @@ public class CropCommandServiceImpl implements CropCommandService {
             }
             crop.updateCurrentPhase(currentPhase);
             cropRepository.save(crop);
+
+            var growRoom = crop.getGrowRoom();
+            if (growRoom.getHasActiveCrop()) {
+                growRoomCommandService.handle(new DeactivateGrowRoomCropCommand(growRoom.getId()));
+            }
             return;
         }
 
@@ -99,4 +111,5 @@ public class CropCommandServiceImpl implements CropCommandService {
 
         cropRepository.save(crop);
     }
+
 }
