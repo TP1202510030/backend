@@ -6,29 +6,29 @@ import lombok.Getter;
 @Embeddable
 @Getter
 public class ParameterThresholds {
-    private Double airTemperatureMin;
-    private Double airTemperatureMax;
+    private Float airTemperatureMin;
+    private Float airTemperatureMax;
 
-    private Double airHumidityMin;
-    private Double airHumidityMax;
+    private Float airHumidityMin;
+    private Float airHumidityMax;
 
-    private Double carbonDioxideMin;
-    private Double carbonDioxideMax;
+    private Float carbonDioxideMin;
+    private Float carbonDioxideMax;
 
-    private Double soilTemperatureMin;
-    private Double soilTemperatureMax;
+    private Float soilTemperatureMin;
+    private Float soilTemperatureMax;
 
-    private Double soilMoistureMin;
-    private Double soilMoistureMax;
+    private Float soilMoistureMin;
+    private Float soilMoistureMax;
 
     public ParameterThresholds() {
     }
 
-    public ParameterThresholds(Double airTemperatureMin, Double airTemperatureMax,
-                               Double airHumidityMin, Double airHumidityMax,
-                               Double carbonDioxideMin, Double carbonDioxideMax,
-                               Double soilTemperatureMin, Double soilTemperatureMax,
-                               Double soilMoistureMin, Double soilMoistureMax) {
+    public ParameterThresholds(Float airTemperatureMin, Float airTemperatureMax,
+                               Float airHumidityMin, Float airHumidityMax,
+                               Float carbonDioxideMin, Float carbonDioxideMax,
+                               Float soilTemperatureMin, Float soilTemperatureMax,
+                               Float soilMoistureMin, Float soilMoistureMax) {
         this.airTemperatureMin = airTemperatureMin;
         this.airTemperatureMax = airTemperatureMax;
         this.airHumidityMin = airHumidityMin;
