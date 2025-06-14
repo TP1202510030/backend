@@ -19,38 +19,37 @@ public class ThresholdsPublicationEventHandler {
         this.objectMapper = objectMapper;
     }
 
+    private static final String THRESHOLD_TOPIC = "threshold";
+    private static final String GROW_ROOM_ID_FIELD = "growRoomId";
+    private static final String PARAMETER_THRESHOLDS_FIELD = "parameterThresholds";
+    private static final String SENSOR_ACTIVATION_FREQUENCY = "sensorActivationFrequency";
+
     @EventListener
     public void on(ThresholdsUpdatedEvent event) {
         var crop = event.getCrop();
-        var phase = event.getPhase(); // La fase actual, o null si el cultivo terminó
+        var phase = event.getPhase();
 
-        var growRoom = crop.getGrowRoom();
-        var company = growRoom.getCompany();
-
-        var topicName = SlugUtils.toSlug(company.getCompanyName(), growRoom.getGrowRoomName(), "threshold");
+        var topicName = SlugUtils.toSlug(THRESHOLD_TOPIC);
+        var growRoomId = crop.getGrowRoom().getId();
+        var sensorActivationFrequency = crop.getSensorActivationFrequency();
 
         try {
-            // Crear el objeto contenedor principal
             ObjectNode rootNode = objectMapper.createObjectNode();
 
+            rootNode.put(GROW_ROOM_ID_FIELD, growRoomId);
+            rootNode.put(SENSOR_ACTIVATION_FREQUENCY, sensorActivationFrequency.toSeconds());
+
             if (phase != null) {
-                // Si hay una fase, serializar sus thresholds y ponerlos dentro del contenedor
-                rootNode.set("parameterThresholds", objectMapper.valueToTree(phase.getThresholds()));
+                rootNode.set(PARAMETER_THRESHOLDS_FIELD, objectMapper.valueToTree(phase.getThresholds()));
             } else {
-                // Si no hay fase (cultivo finalizado), poner null
-                rootNode.putNull("parameterThresholds");
+                rootNode.putNull(PARAMETER_THRESHOLDS_FIELD);
             }
 
-            // Convertir el objeto principal a un string JSON
             String thresholdsJson = objectMapper.writeValueAsString(rootNode);
-
-            //System.out.println("Publishing to topic: " + topicName);
-            //System.out.println("Payload: " + thresholdsJson);
 
             messageBroker.publish(topicName, thresholdsJson);
 
         } catch (Exception e) {
-            // Manejar la excepción de serialización
             System.err.println("Failed to serialize thresholds for publishing: " + e.getMessage());
         }
     }

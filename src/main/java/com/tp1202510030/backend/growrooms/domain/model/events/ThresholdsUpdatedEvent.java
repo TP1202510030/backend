@@ -8,12 +8,11 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class ThresholdsUpdatedEvent extends ApplicationEvent {
     private final Crop crop;
-    private final CropPhase phase; // Puede ser null si el cultivo ha terminado
+    private final CropPhase phase;
 
     public ThresholdsUpdatedEvent(Object source, Crop crop, CropPhase phase) {
         super(source);
         this.crop = crop;
         this.phase = phase;
     }
-
 }

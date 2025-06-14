@@ -47,9 +47,9 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     public Crop() {
     }
 
-    public Crop(Date startDate, Date endDate, Duration sensorActivationFrequency, GrowRoom growRoom, List<CropPhase> phases) {
-        this.startDate = startDate;
-        this.endDate = endDate;
+    public Crop(Duration sensorActivationFrequency, GrowRoom growRoom, List<CropPhase> phases) {
+        this.startDate = new Date();
+        this.endDate = null;
         this.sensorActivationFrequency = sensorActivationFrequency;
         this.growRoom = growRoom;
         this.phases = phases;

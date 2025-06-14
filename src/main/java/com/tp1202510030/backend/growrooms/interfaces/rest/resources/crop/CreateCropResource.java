@@ -4,15 +4,12 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.resources.cropphase.Cr
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Duration;
-import java.util.Date;
 import java.util.List;
 
 @Schema(
         description = "Create Crop Resource",
         example = """
                     {
-                      "startDate": "2025-06-03T19:59:39.612Z",
-                      "endDate": "",
                       "sensorActivationFrequency": "PT5H30M15S",
                       "phases": [
                         {
@@ -68,8 +65,6 @@ import java.util.List;
                 """
 )
 public record CreateCropResource(
-        Date startDate,
-        Date endDate,
         Duration sensorActivationFrequency,
         Long growRoomId,
         List<CreateCropPhaseResource> phases

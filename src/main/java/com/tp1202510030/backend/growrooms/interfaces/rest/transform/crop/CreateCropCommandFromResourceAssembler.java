@@ -14,8 +14,6 @@ public class CreateCropCommandFromResourceAssembler {
                 .toList();
 
         return new CreateCropCommand(
-                resource.startDate(),
-                resource.endDate(),
                 resource.sensorActivationFrequency(),
                 growRoomId,
                 phases

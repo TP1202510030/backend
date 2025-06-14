@@ -6,7 +6,7 @@ import com.tp1202510030.backend.growrooms.domain.model.commands.crop.CreateCropC
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.ActivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeactivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.entities.CropPhase;
-import com.tp1202510030.backend.growrooms.domain.model.events.ThresholdsUpdatedEvent; // IMPORTANTE: Cambiar el import
+import com.tp1202510030.backend.growrooms.domain.model.events.ThresholdsUpdatedEvent;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
@@ -53,8 +53,6 @@ public class CropCommandServiceImpl implements CropCommandService {
                 .toList();
 
         var crop = new Crop(
-                command.startDate(),
-                command.endDate(),
                 command.sensorActivationFrequency(),
                 growRoom,
                 cropPhases
@@ -70,7 +68,6 @@ public class CropCommandServiceImpl implements CropCommandService {
         cropRepository.save(crop);
         growRoomCommandService.handle(new ActivateGrowRoomCropCommand(growRoom.getId()));
 
-        // **NUEVA LÓGICA:** Publicar solo la primera fase
         if (firstPhase != null) {
             eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, firstPhase));
         }
@@ -96,11 +93,10 @@ public class CropCommandServiceImpl implements CropCommandService {
         int currentIndex = (currentPhase != null) ? phases.indexOf(currentPhase) : -1;
 
         if (currentIndex >= phases.size() - 1) {
-            // **NUEVA LÓGICA:** El cultivo ha finalizado
             if (crop.getEndDate() == null) {
                 crop.setEndDate(new Date());
             }
-            crop.updateCurrentPhase(null); // La fase actual ahora es nula
+            crop.updateCurrentPhase(null);
             cropRepository.save(crop);
 
             var growRoom = crop.getGrowRoom();
@@ -108,16 +104,13 @@ public class CropCommandServiceImpl implements CropCommandService {
                 growRoomCommandService.handle(new DeactivateGrowRoomCropCommand(growRoom.getId()));
             }
 
-            // Publicar evento de finalización (con fase nula)
             eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, null));
 
         } else {
-            // **NUEVA LÓGICA:** Avanzar a la siguiente fase
             CropPhase nextPhase = phases.get(currentIndex + 1);
             crop.updateCurrentPhase(nextPhase);
             cropRepository.save(crop);
 
-            // Publicar evento con la nueva fase
             eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, nextPhase));
         }
     }
