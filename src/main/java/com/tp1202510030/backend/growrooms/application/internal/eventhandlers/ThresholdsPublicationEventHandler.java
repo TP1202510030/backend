@@ -20,7 +20,7 @@ public class ThresholdsPublicationEventHandler {
     }
 
     private static final String THRESHOLD_TOPIC = "threshold";
-    private static final String GROW_ROOM_ID_FIELD = "growRoomId";
+    private static final String CROP_ID_FIELD = "cropId";
     private static final String PARAMETER_THRESHOLDS_FIELD = "parameterThresholds";
     private static final String SENSOR_ACTIVATION_FREQUENCY = "sensorActivationFrequency";
 
@@ -30,13 +30,13 @@ public class ThresholdsPublicationEventHandler {
         var phase = event.getPhase();
 
         var topicName = SlugUtils.toSlug(THRESHOLD_TOPIC);
-        var growRoomId = crop.getGrowRoom().getId();
+        var cropId = crop.getId();
         var sensorActivationFrequency = crop.getSensorActivationFrequency();
 
         try {
             ObjectNode rootNode = objectMapper.createObjectNode();
 
-            rootNode.put(GROW_ROOM_ID_FIELD, growRoomId);
+            rootNode.put(CROP_ID_FIELD, cropId);
             rootNode.put(SENSOR_ACTIVATION_FREQUENCY, sensorActivationFrequency.toSeconds());
 
             if (phase != null) {
