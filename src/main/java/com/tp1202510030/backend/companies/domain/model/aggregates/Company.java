@@ -22,7 +22,7 @@ public class Company extends AuditableAbstractAggregateRoot<Company> {
     public Company() {
     }
 
-    public Company(String name, Integer taxIdentificationNumber) {
+    public Company(String name, Long taxIdentificationNumber) {
         this.name = new CompanyName(name);
         this.taxIdentificationNumber = new TaxIdentificationNumber(taxIdentificationNumber);
     }
@@ -31,13 +31,14 @@ public class Company extends AuditableAbstractAggregateRoot<Company> {
         return name.companyName();
     }
 
-    public Integer getTaxIdentificationNumber() {
+    public Long getTaxIdentificationNumber() {
         return taxIdentificationNumber.taxIdentificationNumber();
     }
 
     /**
      * Update company information.
-     * @param name Company name.
+     *
+     * @param name                    Company name.
      * @param taxIdentificationNumber Company gender.
      * @return Company instance.
      */

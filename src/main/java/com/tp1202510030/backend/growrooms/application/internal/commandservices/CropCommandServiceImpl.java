@@ -14,6 +14,7 @@ import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQuery
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -33,6 +34,7 @@ public class CropCommandServiceImpl implements CropCommandService {
     }
 
     @Override
+    @Transactional
     public Long handle(CreateCropCommand command) {
         var growRoomOpt = growRoomQueryService.handle(new GetGrowRoomByIdQuery(command.growRoomId()));
         if (growRoomOpt.isEmpty()) {
@@ -76,13 +78,11 @@ public class CropCommandServiceImpl implements CropCommandService {
     }
 
     @Override
+    @Transactional
     public void handle(AdvanceCropPhaseCommand command) {
-        var cropOpt = cropRepository.findById(command.cropId());
-        if (cropOpt.isEmpty()) {
-            throw new IllegalArgumentException("Crop with ID " + command.cropId() + " not found");
-        }
-
-        var crop = cropOpt.get();
+        var crop = cropRepository.findById(command.cropId())
+                .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + command.cropId() + " not found"));
+        
         List<CropPhase> phases = crop.getPhases();
 
         if (phases == null || phases.isEmpty()) {

@@ -19,16 +19,7 @@ public class MeasurementCommandServiceImpl implements MeasurementCommandService 
 
     @Override
     public void handle(AddMeasurementsToCurrentPhaseCommand command) {
-        var cropOpt = cropRepository.findById(command.cropId());
-        if (cropOpt.isEmpty()) {
-            throw new IllegalArgumentException("Crop not found with id " + command.cropId());
-        }
-        var crop = cropOpt.get();
-
-        var currentPhase = crop.getCurrentPhase();
-        if (currentPhase == null) {
-            throw new IllegalStateException("Crop does not have a current phase set");
-        }
+        var currentPhase = cropRepository.findActivePhaseByCropIdOrThrow(command.cropId());
 
         var measurements = command.measurements().stream()
                 .map(m -> {

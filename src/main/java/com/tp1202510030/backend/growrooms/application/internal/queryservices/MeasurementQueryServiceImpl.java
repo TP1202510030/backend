@@ -27,9 +27,9 @@ public class MeasurementQueryServiceImpl implements MeasurementQueryService {
     }
 
     @Override
-    public List<Measurement> handle(GetMeasurementsForCurrentPhaseByCropIdQuery command) {
-        Crop crop = cropRepository.findById(command.cropId())
-                .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + command.cropId() + " not found"));
+    public List<Measurement> handle(GetMeasurementsForCurrentPhaseByCropIdQuery query) {
+        Crop crop = cropRepository.findById(query.cropId())
+                .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + query.cropId() + " not found"));
 
         if (crop.getCurrentPhase() == null) {
             throw new IllegalStateException("The crop does not have a current phase.");

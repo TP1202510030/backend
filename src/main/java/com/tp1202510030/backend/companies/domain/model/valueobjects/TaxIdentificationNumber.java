@@ -3,7 +3,7 @@ package com.tp1202510030.backend.companies.domain.model.valueobjects;
 import jakarta.persistence.Embeddable;
 
 @Embeddable
-public record TaxIdentificationNumber(Integer taxIdentificationNumber) {
+public record TaxIdentificationNumber(Long taxIdentificationNumber) {
     public TaxIdentificationNumber() {
         this(null);
     }

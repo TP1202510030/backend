@@ -2,6 +2,8 @@ package com.tp1202510030.backend.growrooms.domain.model.aggregates;
 
 import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
 import com.tp1202510030.backend.growrooms.domain.model.entities.Measurement;
+import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ActuatorType;
+import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ControlActionType;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowRoomName;
 import com.tp1202510030.backend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import jakarta.persistence.*;
@@ -10,7 +12,9 @@ import lombok.Setter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
@@ -36,6 +40,12 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
     @Transient
     private List<Measurement> latestMeasurements = new ArrayList<>();
 
+    @Setter
+    @Getter
+    @Transient
+    private Map<ActuatorType, ControlActionType> actuatorStates = new HashMap<>();
+
+
     private boolean hasActiveCrop;
 
     public GrowRoom() {
@@ -56,8 +66,8 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
      * @param company  The company that owns the grow room.
      * @return Grow room instance.
      */
-    public GrowRoom updateInformation(GrowRoomName name, String imageUrl, Company company) {
-        this.name = name;
+    public GrowRoom updateInformation(String name, String imageUrl, Company company) {
+        this.name = new GrowRoomName(name);
         this.imageUrl = imageUrl;
         this.company = company;
         return this;

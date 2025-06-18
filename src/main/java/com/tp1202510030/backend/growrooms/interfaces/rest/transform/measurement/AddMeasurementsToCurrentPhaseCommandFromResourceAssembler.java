@@ -6,7 +6,6 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.resources.measurement.
 import java.util.List;
 
 public class AddMeasurementsToCurrentPhaseCommandFromResourceAssembler {
-
     public static AddMeasurementsToCurrentPhaseCommand toCommandFromResourceAssembler(Long cropId, List<CreateMeasurementResource> measurementResources) {
         List<AddMeasurementsToCurrentPhaseCommand.MeasurementEntry> entries = measurementResources.stream()
                 .map(resource -> new AddMeasurementsToCurrentPhaseCommand.MeasurementEntry(
