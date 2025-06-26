@@ -3,6 +3,7 @@ package com.tp1202510030.backend.growrooms.application.internal.commandservices;
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCropPhaseCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.CreateCropCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.crop.FinishCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.ActivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeactivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.entities.CropPhase;
@@ -82,9 +83,8 @@ public class CropCommandServiceImpl implements CropCommandService {
     public void handle(AdvanceCropPhaseCommand command) {
         var crop = cropRepository.findById(command.cropId())
                 .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + command.cropId() + " not found"));
-        
-        List<CropPhase> phases = crop.getPhases();
 
+        List<CropPhase> phases = crop.getPhases();
         if (phases == null || phases.isEmpty()) {
             throw new IllegalStateException("Crop with ID " + command.cropId() + " has no phases");
         }
@@ -93,25 +93,44 @@ public class CropCommandServiceImpl implements CropCommandService {
         int currentIndex = (currentPhase != null) ? phases.indexOf(currentPhase) : -1;
 
         if (currentIndex >= phases.size() - 1) {
-            if (crop.getEndDate() == null) {
-                crop.setEndDate(new Date());
-            }
-            crop.updateCurrentPhase(null);
-            cropRepository.save(crop);
-
-            var growRoom = crop.getGrowRoom();
-            if (growRoom.getHasActiveCrop()) {
-                growRoomCommandService.handle(new DeactivateGrowRoomCropCommand(growRoom.getId()));
-            }
-
-            eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, null));
-
-        } else {
-            CropPhase nextPhase = phases.get(currentIndex + 1);
-            crop.updateCurrentPhase(nextPhase);
-            cropRepository.save(crop);
-
-            eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, nextPhase));
+            throw new IllegalStateException("Cannot advance from the last phase. Use the 'finish' endpoint instead.");
         }
+
+        CropPhase nextPhase = phases.get(currentIndex + 1);
+        crop.updateCurrentPhase(nextPhase);
+        cropRepository.save(crop);
+
+        eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, nextPhase));
+    }
+
+
+    @Override
+    public void handle(FinishCropCommand command) {
+        var crop = cropRepository.findById(command.cropId())
+                .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + command.cropId() + " not found"));
+
+        List<CropPhase> phases = crop.getPhases();
+        var currentPhase = crop.getCurrentPhase();
+        int currentIndex = (currentPhase != null) ? phases.indexOf(currentPhase) : -1;
+
+        if (currentIndex < phases.size() - 1) {
+            throw new IllegalStateException("Crop cannot be finished. It is not on its last phase yet.");
+        }
+
+        if (crop.getEndDate() == null) {
+            crop.setEndDate(new Date());
+        }
+        crop.updateCurrentPhase(null);
+
+        crop.setTotalProduction(command.totalProduction());
+
+        cropRepository.save(crop);
+
+        var growRoom = crop.getGrowRoom();
+        if (growRoom.getHasActiveCrop()) {
+            growRoomCommandService.handle(new DeactivateGrowRoomCropCommand(growRoom.getId()));
+        }
+
+        eventPublisher.publishEvent(new ThresholdsUpdatedEvent(this, crop, null));
     }
 }

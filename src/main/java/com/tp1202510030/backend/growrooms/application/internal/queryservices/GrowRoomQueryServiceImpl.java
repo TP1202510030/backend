@@ -48,6 +48,8 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
 
     private GrowRoom populateGrowRoomDetails(GrowRoom growRoom) {
         cropRepository.findFirstByGrowRoomIdAndEndDateIsNull(growRoom.getId()).ifPresent(activeCrop -> {
+            growRoom.setActiveCropId(activeCrop.getId());
+            
             if (activeCrop.getCurrentPhase() != null) {
                 Long currentPhaseId = activeCrop.getCurrentPhase().getId();
                 List<ControlAction> latestActions = controlActionRepository.findLatestControlActionsByCropPhaseId(currentPhaseId);

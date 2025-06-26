@@ -2,6 +2,7 @@ package com.tp1202510030.backend.growrooms.interfaces;
 
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCropPhaseCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.crop.FinishCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropsByGrowRoomIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetFinishedCropsQuery;
@@ -9,6 +10,7 @@ import com.tp1202510030.backend.growrooms.domain.services.crop.CropCommandServic
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropQueryService;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CreateCropResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CropResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.FinishCropResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.crop.CreateCropCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.crop.CropResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -89,16 +91,54 @@ public class CropController {
                     content = @Content(mediaType = "application/json"))
     })
     public ResponseEntity<Void> advanceCropPhase(@PathVariable Long cropId) {
-        try {
-            cropCommandService.handle(new AdvanceCropPhaseCommand(cropId));
-            return ResponseEntity.ok().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(404).build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(500).build();
-        }
+        cropCommandService.handle(new AdvanceCropPhaseCommand(cropId));
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{cropId}/finish")
+    @Operation(
+            summary = "Finish a crop and record total production",
+            description = "Marks a crop as finished, sets its end date, and records the total production.",
+            tags = {"Crops"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Crop finished successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input, e.g., crop not on last phase"),
+            @ApiResponse(responseCode = "404", description = "Crop not found")
+    })
+    public ResponseEntity<Void> finishCrop(@PathVariable Long cropId, @RequestBody FinishCropResource resource) {
+        var command = new FinishCropCommand(cropId, resource.totalProduction());
+        cropCommandService.handle(command);
+        return ResponseEntity.ok().build();
+    }
+
+
+    /**
+     * Get crop by ID
+     *
+     * @param cropId The crop ID to retrieve
+     * @return The CropResource associated with the given crop ID
+     */
+    @GetMapping("/{cropId}")
+    @Operation(
+            summary = "Get crop by ID",
+            description = "Retrieves a crop by its ID.",
+            tags = {"Crops"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Crop retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
+            @ApiResponse(responseCode = "404", description = "Crop not found")
+    })
+    public ResponseEntity<CropResource> getCropById(@PathVariable Long cropId) {
+        var query = new GetCropByIdQuery(cropId);
+        Optional<Crop> cropOpt = cropQueryService.handle(query);
+
+        var crop = cropQueryService.handle(query)
+                .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + cropId + " not found."));
+
+        var cropResource = CropResourceFromEntityAssembler.toResourceFromEntity(crop);
+        return ResponseEntity.ok(cropResource);
     }
 
     /**

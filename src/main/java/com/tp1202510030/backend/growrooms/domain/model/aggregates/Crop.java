@@ -44,6 +44,10 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
     @Setter
     private CropPhase currentPhase;
 
+    @Getter
+    @Setter
+    private Double totalProduction;
+
     public Crop() {
     }
 
@@ -54,6 +58,7 @@ public class Crop extends AuditableAbstractAggregateRoot<Crop> {
         this.growRoom = growRoom;
         this.phases = phases;
         this.currentPhase = null;
+        this.totalProduction = 0.0;
     }
 
     public void updateCurrentPhase(CropPhase phase) {

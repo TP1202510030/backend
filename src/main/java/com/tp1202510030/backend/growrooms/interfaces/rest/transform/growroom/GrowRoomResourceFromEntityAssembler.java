@@ -25,7 +25,8 @@ public class GrowRoomResourceFromEntityAssembler {
                 entity.getImageUrl(),
                 entity.getHasActiveCrop(),
                 latestMeasurements,
-                actuatorStates
+                actuatorStates,
+                entity.getActiveCropId()
         );
     }
 }

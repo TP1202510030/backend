@@ -25,7 +25,8 @@ public class CropResourceFromEntityAssembler {
                 entity.getSensorActivationFrequency(),
                 entity.getGrowRoom().getId(),
                 phaseResources,
-                currentPhaseResource
+                currentPhaseResource,
+                entity.getTotalProduction()
         );
     }
 }

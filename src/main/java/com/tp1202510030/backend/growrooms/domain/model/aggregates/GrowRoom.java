@@ -35,16 +35,20 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
     @Getter
     private Company company;
 
-    @Setter
     @Getter
+    @Setter
     @Transient
     private List<Measurement> latestMeasurements = new ArrayList<>();
 
-    @Setter
     @Getter
+    @Setter
     @Transient
     private Map<ActuatorType, ControlActionType> actuatorStates = new HashMap<>();
 
+    @Getter
+    @Setter
+    @Transient
+    private Long activeCropId;
 
     private boolean hasActiveCrop;
 

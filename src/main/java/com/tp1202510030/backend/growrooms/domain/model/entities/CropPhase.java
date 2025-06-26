@@ -42,7 +42,7 @@ public class CropPhase {
     @OneToMany(mappedBy = "cropPhase", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Measurement> measurements = new ArrayList<>();
 
-    @OneToMany(mappedBy = "cropPhase", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "cropPhase", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<ControlAction> controlActions = new ArrayList<>();
 
     public CropPhase(String name, Duration duration, ParameterThresholds thresholds) {

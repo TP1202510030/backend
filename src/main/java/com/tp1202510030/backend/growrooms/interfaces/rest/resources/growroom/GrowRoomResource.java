@@ -12,6 +12,7 @@ public record GrowRoomResource(
         String imageUrl,
         boolean hasActiveCrop,
         List<MeasurementResource> latestMeasurements,
-        Map<ActuatorType, String> actuatorStates
+        Map<ActuatorType, String> actuatorStates,
+        Long activeCropId
 ) {
 }

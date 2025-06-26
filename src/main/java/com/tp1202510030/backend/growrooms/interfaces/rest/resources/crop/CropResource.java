@@ -13,6 +13,7 @@ public record CropResource(
         Duration sensorActivationFrequency,
         Long growRoomId,
         List<CropPhaseResource> phases,
-        CropPhaseResource currentPhase
+        CropPhaseResource currentPhase,
+        Double totalProduction
 ) {
 }
