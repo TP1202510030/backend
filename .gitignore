@@ -35,5 +35,7 @@ build/
 ### Environment ###
 .env
 
+certs
+
 *.log
 *.class

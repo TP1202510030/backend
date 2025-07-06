@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   db:
     image: postgres:15
@@ -14,13 +13,21 @@ services:
   app:
     build: .
     ports:
-      - "8080:8080"
+      - "3000:3000"
     depends_on:
       - db
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${DB_NAME}
       SPRING_DATASOURCE_USERNAME: ${DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      MQTT_BROKER_URL: ${BROKER_URL}
+      MQTT_CLIENT_ID: ${CLIENT_ID}
+      MQTT_CA_CERTIFICATE_PATH: ${CA_CERT_PATH}
+      MQTT_CLIENT_CERTIFICATE_PATH: ${DEVICE_CERT_PATH}
+      MQTT_CLIENT_PRIVATE_KEY_PATH: ${DEVICE_KEY_PATH}
+    volumes:
+      - ./certs:/certs
 
 volumes:
   postgres_data:
