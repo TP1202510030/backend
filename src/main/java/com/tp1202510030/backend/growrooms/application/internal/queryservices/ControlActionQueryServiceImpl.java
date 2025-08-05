@@ -8,9 +8,9 @@ import com.tp1202510030.backend.growrooms.domain.services.controlaction.ControlA
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.ControlActionRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropPhaseRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class ControlActionQueryServiceImpl implements ControlActionQueryService {
@@ -25,15 +25,15 @@ public class ControlActionQueryServiceImpl implements ControlActionQueryService 
     }
 
     @Override
-    public List<ControlAction> handle(GetAllControlActionsByCropPhaseIdQuery query) {
+    public Page<ControlAction> handle(GetAllControlActionsByCropPhaseIdQuery query, Pageable pageable) {
         cropPhaseRepository.findById(query.cropPhaseId())
                 .orElseThrow(() -> new IllegalArgumentException("CropPhase with ID " + query.cropPhaseId() + " not found."));
-        
-        return controlActionRepository.findAllByCropPhaseId(query.cropPhaseId());
+
+        return controlActionRepository.findAllByCropPhaseId(query.cropPhaseId(), pageable);
     }
 
     @Override
-    public List<ControlAction> handle(GetControlActionsForCurrentPhaseByCropIdQuery query) {
+    public Page<ControlAction> handle(GetControlActionsForCurrentPhaseByCropIdQuery query, Pageable pageable) {
         Crop crop = cropRepository.findById(query.cropId())
                 .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + query.cropId() + " not found"));
 
@@ -41,6 +41,6 @@ public class ControlActionQueryServiceImpl implements ControlActionQueryService 
             throw new IllegalStateException("The crop does not have a current phase.");
         }
 
-        return controlActionRepository.findAllByCropPhaseId(crop.getCurrentPhase().getId());
+        return controlActionRepository.findAllByCropPhaseId(crop.getCurrentPhase().getId(), pageable);
     }
 }

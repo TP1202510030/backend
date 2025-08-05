@@ -7,6 +7,8 @@ import com.tp1202510030.backend.companies.domain.model.valueobjects.CompanyName;
 import com.tp1202510030.backend.companies.domain.model.valueobjects.TaxIdentificationNumber;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyCommandService;
 import com.tp1202510030.backend.companies.infrastructure.persistence.jpa.repositories.CompanyRepository;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,16 +23,16 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
 
 
     @Override
-    public Long handle(CreateCompanyCommand command) {
+    public Optional<Company> handle(CreateCompanyCommand command) {
         var companyName = new CompanyName(command.name());
         var taxIdentificationNumber = new TaxIdentificationNumber(command.taxIdentificationNumber());
 
-        companyRepository.findByName(companyName).map(company -> {
-            throw new IllegalArgumentException("Company with name " + command.name() + " already exists");
+        companyRepository.findByName(companyName).ifPresent(company -> {
+            throw new ResourceAlreadyExistsException("Company", "name", command.name());
         });
 
-        companyRepository.findByTaxIdentificationNumber(taxIdentificationNumber).map(company -> {
-            throw new IllegalArgumentException("Company with TIN " + command.taxIdentificationNumber() + " already exists");
+        companyRepository.findByTaxIdentificationNumber(taxIdentificationNumber).ifPresent(company -> {
+            throw new ResourceAlreadyExistsException("Company", "TIN", command.taxIdentificationNumber().toString());
         });
 
         var company = new Company(
@@ -38,22 +40,21 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
                 command.taxIdentificationNumber()
         );
         companyRepository.save(company);
-        return company.getId();
+        return Optional.of(company);
     }
 
     @Override
     public Optional<Company> handle(UpdateCompanyCommand command) {
         if (companyRepository.existsByNameAndIdIsNot(command.name(), command.companyId()))
-            throw new IllegalArgumentException("Company with name %s already exists".formatted(command.name()));
+            throw new ResourceAlreadyExistsException("Company", "name", command.name().companyName());
 
         if (companyRepository.existsByTaxIdentificationNumberAndIdIsNot(command.taxIdentificationNumber(), command.companyId()))
-            throw new IllegalArgumentException("Company with TIN %s already exists".formatted(command.taxIdentificationNumber()));
+            throw new ResourceAlreadyExistsException("Company", "TIN", command.taxIdentificationNumber().taxIdentificationNumber().toString());
 
 
-        var company = companyRepository.findById(command.companyId());
-        if (company.isEmpty())
-            throw new IllegalArgumentException("Company with id %s not found".formatted(command.companyId()));
-        var companyToUpdate = company.get();
+        var companyToUpdate = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
+
         try {
             var updatedCompany = companyRepository.save(companyToUpdate.updateInformation(
                     command.name(),
@@ -61,7 +62,7 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
             ));
             return Optional.of(updatedCompany);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Error updating company: %s".formatted(e.getMessage()));
+            throw new RuntimeException("Error updating company: %s".formatted(e.getMessage()));
         }
     }
 }

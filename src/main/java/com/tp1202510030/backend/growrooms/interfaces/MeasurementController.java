@@ -16,11 +16,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/measurements", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -73,12 +74,13 @@ public class MeasurementController {
      * Get measurements by crop phase ID
      *
      * @param cropPhaseId The crop phase ID to filter crops
-     * @return List of MeasurementResources associated to the crop phase
+     * @param pageable    The pagination information
+     * @return Page of MeasurementResources associated to the crop phase
      */
     @GetMapping
     @Operation(
             summary = "Get measurements by crop phase ID",
-            description = "Retrieves a list of measurements associated with a given crop phase ID.",
+            description = "Retrieves a paginated list of measurements associated with a given crop phase ID.",
             tags = {"Measurements"}
     )
     @ApiResponses({
@@ -86,17 +88,15 @@ public class MeasurementController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "204", description = "No measurements found for the grow room")
     })
-    public ResponseEntity<List<MeasurementResource>> getCropsByGrowRoomId(@RequestParam Long cropPhaseId) {
+    public ResponseEntity<Page<MeasurementResource>> getMeasurementsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
         var query = new GetAllMeasurementsByCropPhaseIdQuery(cropPhaseId);
-        List<Measurement> measurements = measurementQueryService.handle(query);
+        Page<Measurement> measurementsPage = measurementQueryService.handle(query, pageable);
 
-        if (measurements.isEmpty()) {
+        if (measurementsPage.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = measurements.stream()
-                .map(MeasurementResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = measurementsPage.map(MeasurementResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }
@@ -111,18 +111,16 @@ public class MeasurementController {
             @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Crop not found or no current phase available")
     })
-    public ResponseEntity<List<MeasurementResource>> getMeasurementsForCurrentPhase(
-            @PathVariable Long cropId) {
+    public ResponseEntity<Page<MeasurementResource>> getMeasurementsForCurrentPhase(
+            @PathVariable Long cropId, @ParameterObject Pageable pageable) {
         var query = new GetMeasurementsForCurrentPhaseByCropIdQuery(cropId);
-        List<Measurement> measurements = measurementQueryService.handle(query);
+        Page<Measurement> measurementsPage = measurementQueryService.handle(query, pageable);
 
-        if (measurements.isEmpty()) {
+        if (measurementsPage.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = measurements.stream()
-                .map(MeasurementResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = measurementsPage.map(MeasurementResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }

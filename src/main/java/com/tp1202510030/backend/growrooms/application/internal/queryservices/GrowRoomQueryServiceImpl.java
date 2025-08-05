@@ -12,6 +12,7 @@ import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.reposit
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.GrowRoomRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.MeasurementRepository;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,10 +50,10 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
     private GrowRoom populateGrowRoomDetails(GrowRoom growRoom) {
         cropRepository.findFirstByGrowRoomIdAndEndDateIsNull(growRoom.getId()).ifPresent(activeCrop -> {
             growRoom.setActiveCropId(activeCrop.getId());
-            
+
             if (activeCrop.getCurrentPhase() != null) {
                 Long currentPhaseId = activeCrop.getCurrentPhase().getId();
-                List<ControlAction> latestActions = controlActionRepository.findLatestControlActionsByCropPhaseId(currentPhaseId);
+                List<ControlAction> latestActions = controlActionRepository.findLatestControlActionsByCropPhaseId(currentPhaseId, Pageable.unpaged()).getContent();
                 Map<ActuatorType, ControlActionType> states = latestActions.stream()
                         .collect(Collectors.toMap(
                                 ControlAction::getActuatorType,
@@ -62,7 +63,7 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
                 growRoom.setActuatorStates(states);
 
                 measurementRepository.findLatestMeasurementTimestamp(currentPhaseId).ifPresent(lastTimestamp -> {
-                    List<Measurement> lastMeasurements = measurementRepository.findAllByCropPhaseIdAndTimestamp(currentPhaseId, lastTimestamp);
+                    List<Measurement> lastMeasurements = measurementRepository.findAllByCropPhaseIdAndTimestamp(currentPhaseId, lastTimestamp, Pageable.unpaged()).getContent();
                     growRoom.setLatestMeasurements(lastMeasurements);
                 });
             }

@@ -1,5 +1,6 @@
 package com.tp1202510030.backend.iam.application.acl;
 
+import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.commands.SignUpCommand;
 import com.tp1202510030.backend.iam.domain.model.entities.Role;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
@@ -7,11 +8,12 @@ import com.tp1202510030.backend.iam.domain.model.queries.GetUserByUsernameQuery;
 import com.tp1202510030.backend.iam.domain.services.UserCommandService;
 import com.tp1202510030.backend.iam.domain.services.UserQueryService;
 import com.tp1202510030.backend.iam.interfaces.acl.IamContextFacade;
-import org.apache.logging.log4j.util.Strings;
+import com.tp1202510030.backend.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class IamContextFacadeImpl implements IamContextFacade {
@@ -24,35 +26,27 @@ public class IamContextFacadeImpl implements IamContextFacade {
     }
 
     @Override
-    public Long createUser(String username, String password) {
+    public Optional<Long> createUser(String username, String password) {
         var signUpCommand = new SignUpCommand(username, password, List.of(Role.getDefaultRole()));
-        var result = userCommandService.handle(signUpCommand);
-        if (result.isEmpty()) return 0L;
-        return result.get().getId();
+        return userCommandService.handle(signUpCommand).map(AuditableAbstractAggregateRoot::getId);
     }
 
     @Override
-    public Long createUser(String username, String password, List<String> roleNames) {
+    public Optional<Long> createUser(String username, String password, List<String> roleNames) {
         var roles = roleNames == null ? new ArrayList<Role>() : roleNames.stream().map(Role::toRoleFromName).toList();
         var signUpCommand = new SignUpCommand(username, password, roles);
-        var result = userCommandService.handle(signUpCommand);
-        if (result.isEmpty()) return 0L;
-        return result.get().getId();
+        return userCommandService.handle(signUpCommand).map(AuditableAbstractAggregateRoot::getId);
     }
 
     @Override
-    public Long fetchUserIdByUsername(String username) {
+    public Optional<Long> fetchUserIdByUsername(String username) {
         var getUserByUsernameQuery = new GetUserByUsernameQuery(username);
-        var result = userQueryService.handle(getUserByUsernameQuery);
-        if (result.isEmpty()) return 0L;
-        return result.get().getId();
+        return userQueryService.handle(getUserByUsernameQuery).map(AuditableAbstractAggregateRoot::getId);
     }
 
     @Override
-    public String fetchUsernameByUserId(Long userId) {
+    public Optional<String> fetchUsernameByUserId(Long userId) {
         var getUserByUserIdQuery = new GetUserByIdQuery(userId);
-        var result = userQueryService.handle(getUserByUserIdQuery);
-        if (result.isEmpty()) return Strings.EMPTY;
-        return result.get().getUsername();
+        return userQueryService.handle(getUserByUserIdQuery).map(User::getUsername);
     }
 }

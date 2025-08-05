@@ -51,20 +51,14 @@ public class CompanyController {
     })
     public ResponseEntity<CompanyResource> createCompany(@RequestBody CreateCompanyResource createCompanyResource) {
         var createCompanyCommand = CreateCompanyCommandFromResourceAssembler.toCommandFromResource(createCompanyResource);
-        var companyId = companyCommandService.handle(createCompanyCommand);
 
-        if (companyId == 0L) {
+        var companyOptional = companyCommandService.handle(createCompanyCommand);
+
+        if (companyOptional.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        var getCompanyByIdQuery = new GetCompanyByIdQuery(companyId);
-        var company = companyQueryService.handle(getCompanyByIdQuery);
-
-        if (company.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        var companyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(company.get());
+        var companyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(companyOptional.get());
         return ResponseEntity.ok(companyResource);
     }
 
@@ -72,7 +66,7 @@ public class CompanyController {
      * Update company
      *
      * @param companyId The company id
-     * @param resource    The {@link UpdateCompanyResource} instance
+     * @param resource  The {@link UpdateCompanyResource} instance
      * @return The {@link CompanyResource} resource for the updated company
      */
     @PutMapping("/{companyId}")

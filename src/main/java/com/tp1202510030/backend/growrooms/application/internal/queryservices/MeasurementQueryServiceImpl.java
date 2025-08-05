@@ -8,9 +8,9 @@ import com.tp1202510030.backend.growrooms.domain.services.measurement.Measuremen
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropPhaseRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.MeasurementRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class MeasurementQueryServiceImpl implements MeasurementQueryService {
@@ -25,15 +25,15 @@ public class MeasurementQueryServiceImpl implements MeasurementQueryService {
     }
 
     @Override
-    public List<Measurement> handle(GetAllMeasurementsByCropPhaseIdQuery query) {
+    public Page<Measurement> handle(GetAllMeasurementsByCropPhaseIdQuery query, Pageable pageable) {
         cropPhaseRepository.findById(query.cropPhaseId())
                 .orElseThrow(() -> new IllegalArgumentException("CropPhase with ID " + query.cropPhaseId() + " not found."));
-        
-        return this.measurementRepository.findAllByCropPhaseId(query.cropPhaseId());
+
+        return this.measurementRepository.findAllByCropPhaseId(query.cropPhaseId(), pageable);
     }
 
     @Override
-    public List<Measurement> handle(GetMeasurementsForCurrentPhaseByCropIdQuery query) {
+    public Page<Measurement> handle(GetMeasurementsForCurrentPhaseByCropIdQuery query, Pageable pageable) {
         Crop crop = cropRepository.findById(query.cropId())
                 .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + query.cropId() + " not found"));
 
@@ -41,6 +41,6 @@ public class MeasurementQueryServiceImpl implements MeasurementQueryService {
             throw new IllegalStateException("The crop does not have a current phase.");
         }
 
-        return measurementRepository.findAllByCropPhaseId(crop.getCurrentPhase().getId());
+        return measurementRepository.findAllByCropPhaseId(crop.getCurrentPhase().getId(), pageable);
     }
 }

@@ -9,6 +9,8 @@ import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.UpdateG
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowRoomName;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.GrowRoomRepository;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +29,14 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
     @Override
     @Transactional
     public Long handle(CreateGrowRoomCommand command) {
-        var company = companyRepository.findById(command.companyId()).orElseThrow(() -> new IllegalArgumentException("Company with ID " + command.companyId() + " not found"));
+        var company = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
 
-        var growRoomName = new GrowRoomName(command.name());
+
+        GrowRoomName growRoomName = new GrowRoomName(command.name());
 
         growRoomRepository.findByName(growRoomName).ifPresent(g -> {
-            throw new IllegalArgumentException("Grow room with name " + g.getGrowRoomName() + " already exists");
+            throw new ResourceAlreadyExistsException("Grow room", "name", g.getGrowRoomName());
         });
 
         var growRoom = new GrowRoom(
@@ -47,17 +51,18 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
     @Override
     @Transactional
     public Optional<GrowRoom> handle(UpdateGrowRoomCommand command) {
-        var company = companyRepository.findById(command.companyId()).orElseThrow(() -> new IllegalArgumentException("Company with ID " + command.companyId() + " not found"));
+        var company = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
 
         GrowRoomName growRoomName = new GrowRoomName(command.name());
 
         if (growRoomRepository.existsByNameAndIdIsNot(growRoomName, command.growRoomId())) {
-            throw new IllegalArgumentException("Grow room with name %s already exists".formatted(command.name()));
+            throw new ResourceAlreadyExistsException("Grow room", "name", command.name());
         }
 
         var growRoom = growRoomRepository.findById(command.growRoomId());
         if (growRoom.isEmpty()) {
-            throw new IllegalArgumentException("Grow room with id %s not found".formatted(command.growRoomId()));
+            throw new ResourceNotFoundException("Grow room", "ID", command.growRoomId().toString());
         }
 
         var growRoomToUpdate = growRoom.get();
@@ -69,8 +74,8 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
     @Override
     @Transactional
     public void handle(ActivateGrowRoomCropCommand command) {
-        var growRoom = growRoomRepository.findById(command.growRoomId()).orElseThrow(() -> new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found"));
-
+        var growRoom = growRoomRepository.findById(command.growRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Grow Room", "ID", command.growRoomId().toString()));
         growRoom.activateCrop();
         growRoomRepository.save(growRoom);
     }
@@ -78,8 +83,8 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
     @Override
     @Transactional
     public void handle(DeactivateGrowRoomCropCommand command) {
-        var growRoom = growRoomRepository.findById(command.growRoomId()).orElseThrow(() -> new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found"));
-
+        var growRoom = growRoomRepository.findById(command.growRoomId())
+                .orElseThrow(() -> new ResourceNotFoundException("Grow Room", "ID", command.growRoomId().toString()));
         growRoom.deactivateCrop();
         growRoomRepository.save(growRoom);
     }

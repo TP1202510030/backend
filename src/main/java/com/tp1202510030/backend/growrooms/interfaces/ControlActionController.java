@@ -7,20 +7,19 @@ import com.tp1202510030.backend.growrooms.domain.services.controlaction.ControlA
 import com.tp1202510030.backend.growrooms.domain.services.controlaction.ControlActionQueryService;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.controlaction.AddControlActionsToCurrentPhaseResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.controlaction.ControlActionResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CropResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.controlaction.AddControlActionsToCurrentPhaseCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.controlaction.ControlActionResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1/control_actions", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,7 +32,6 @@ public class ControlActionController {
         this.controlActionCommandService = controlActionCommandService;
         this.controlActionQueryService = controlActionQueryService;
     }
-
 
     /**
      * Add multiple control actions to the current phase of a crop
@@ -79,25 +77,18 @@ public class ControlActionController {
     @GetMapping
     @Operation(
             summary = "Get control actions by crop phase ID",
-            description = "Retrieves a list of controlActions associated with a given crop phase ID.",
+            description = "Retrieves a paginated list of controlActions associated with a given crop phase ID.",
             tags = {"Control Actions"}
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "ControlActions retrieved successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
-            @ApiResponse(responseCode = "204", description = "No controlActions found for the grow room")
-    })
-    public ResponseEntity<List<ControlActionResource>> getCropsByGrowRoomId(@RequestParam Long cropPhaseId) {
+    public ResponseEntity<Page<ControlActionResource>> getControlActionsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
         var query = new GetAllControlActionsByCropPhaseIdQuery(cropPhaseId);
-        List<ControlAction> controlActions = controlActionQueryService.handle(query);
+        Page<ControlAction> controlActionsPage = controlActionQueryService.handle(query, pageable);
 
-        if (controlActions.isEmpty()) {
+        if (controlActionsPage.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = controlActions.stream()
-                .map(ControlActionResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = controlActionsPage.map(ControlActionResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }
@@ -108,22 +99,16 @@ public class ControlActionController {
             description = "Retrieve all controlActions for the current phase of a crop by its ID.",
             tags = {"Control Actions"}
     )
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Control Actions retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Crop not found or no current phase available")
-    })
-    public ResponseEntity<List<ControlActionResource>> getControlActionsForCurrentPhase(
-            @PathVariable Long cropId) {
+    public ResponseEntity<Page<ControlActionResource>> getControlActionsForCurrentPhase(
+            @PathVariable Long cropId, @ParameterObject Pageable pageable) {
         var query = new GetControlActionsForCurrentPhaseByCropIdQuery(cropId);
-        List<ControlAction> controlActions = controlActionQueryService.handle(query);
+        Page<ControlAction> controlActionsPage = controlActionQueryService.handle(query, pageable);
 
-        if (controlActions.isEmpty()) {
+        if (controlActionsPage.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = controlActions.stream()
-                .map(ControlActionResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = controlActionsPage.map(ControlActionResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }

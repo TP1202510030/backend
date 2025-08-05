@@ -1,5 +1,7 @@
 package com.tp1202510030.backend.shared.interfaces.rest.exception;
 
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import com.tp1202510030.backend.shared.interfaces.rest.resources.ErrorResponseResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,30 @@ import java.util.Date;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponseResource> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        logger.warn("Resource Not Found (404): {}. Request: {}", ex.getMessage(), request.getDescription(false));
+        var errorResponse = new ErrorResponseResource(
+                HttpStatus.NOT_FOUND.value(),
+                ex.getMessage(),
+                request.getDescription(false),
+                new Date()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponseResource> handleResourceAlreadyExistsException(ResourceAlreadyExistsException ex, WebRequest request) {
+        logger.warn("Resource Already Exists (409): {}. Request: {}", ex.getMessage(), request.getDescription(false));
+        var errorResponse = new ErrorResponseResource(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                request.getDescription(false),
+                new Date()
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+    }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseResource> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
