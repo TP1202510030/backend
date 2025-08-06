@@ -6,11 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface GrowRoomRepository extends JpaRepository<GrowRoom, Long> {
-    Optional<GrowRoom> findByName(GrowRoomName name);
+    boolean existsByNameAndCompanyId(GrowRoomName name, Long companyId);
+
     List<GrowRoom> findAllByCompanyId(Long companyId);
+
     boolean existsByNameAndIdIsNot(GrowRoomName name, Long id);
 }

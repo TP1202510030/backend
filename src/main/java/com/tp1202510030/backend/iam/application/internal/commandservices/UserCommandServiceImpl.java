@@ -1,15 +1,17 @@
 package com.tp1202510030.backend.iam.application.internal.commandservices;
 
+import com.tp1202510030.backend.companies.infrastructure.persistence.jpa.repositories.CompanyRepository;
 import com.tp1202510030.backend.iam.application.internal.outboundservices.hashing.HashingService;
 import com.tp1202510030.backend.iam.application.internal.outboundservices.tokens.TokenService;
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
+import com.tp1202510030.backend.iam.domain.model.commands.CreateUserCommand;
 import com.tp1202510030.backend.iam.domain.model.commands.SignInCommand;
-import com.tp1202510030.backend.iam.domain.model.commands.SignUpCommand;
 import com.tp1202510030.backend.iam.domain.services.UserCommandService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -19,14 +21,43 @@ public class UserCommandServiceImpl implements UserCommandService {
     private final RoleRepository roleRepository;
     private final HashingService hashingService;
     private final TokenService tokenService;
+    private final CompanyRepository companyRepository;
 
-    public UserCommandServiceImpl(UserRepository userRepository, RoleRepository roleRepository, HashingService hashingService, TokenService tokenService) {
+    public UserCommandServiceImpl(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            HashingService hashingService,
+            TokenService tokenService,
+            CompanyRepository companyRepository
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.hashingService = hashingService;
         this.tokenService = tokenService;
+        this.companyRepository = companyRepository;
     }
 
+    @Override
+    @Transactional
+    public Optional<User> handle(CreateUserCommand command) {
+        if (userRepository.existsByUsername(command.username())) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        var company = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new RuntimeException("Company with ID " + command.companyId() + " not found"));
+
+        var roles = command.roles().stream()
+                .map(role -> roleRepository.findByName(role.getName())
+                        .orElseThrow(() -> new RuntimeException("Role name not found")))
+                .toList();
+
+        var user = new User(command.username(), hashingService.encode(command.password()), roles, company);
+        userRepository.save(user);
+        return userRepository.findByUsername(command.username());
+    }
+
+    /*
     @Override
     public Optional<User> handle(SignUpCommand command) {
         if (userRepository.existsByUsername(command.username()))
@@ -37,6 +68,7 @@ public class UserCommandServiceImpl implements UserCommandService {
         userRepository.save(user);
         return userRepository.findByUsername(command.username());
     }
+     */
 
     @Override
     public Optional<ImmutablePair<User, String>> handle(SignInCommand command) {

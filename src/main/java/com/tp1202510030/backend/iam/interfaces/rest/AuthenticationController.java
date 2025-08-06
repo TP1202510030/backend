@@ -3,17 +3,12 @@ package com.tp1202510030.backend.iam.interfaces.rest;
 import com.tp1202510030.backend.iam.domain.services.UserCommandService;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.AuthenticatedUserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.SignInResource;
-import com.tp1202510030.backend.iam.interfaces.rest.resources.SignUpResource;
-import com.tp1202510030.backend.iam.interfaces.rest.resources.UserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.AuthenticatedUserResourceFromEntityAssembler;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.SignInCommandFromResourceAssembler;
-import com.tp1202510030.backend.iam.interfaces.rest.transform.SignUpCommandFromResourceAssembler;
-import com.tp1202510030.backend.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +26,7 @@ public class AuthenticationController {
         this.userCommandService = userCommandService;
     }
 
+    /*
     @PostMapping("/sign-up")
     @Operation(summary = "Sign up a new user", description = "Sign up a new user with the provided username, password, and roles.")
     @ApiResponses(value = {
@@ -45,6 +41,7 @@ public class AuthenticationController {
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(userEntity);
         return new ResponseEntity<>(userResource, HttpStatus.CREATED);
     }
+     */
 
     @PostMapping("/sign-in")
     @Operation(summary = "Sign in a user", description = "Sign in a user with the provided username and password.")
@@ -57,7 +54,7 @@ public class AuthenticationController {
         var authenticatedUserResult = userCommandService.handle(signInCommand);
         if (authenticatedUserResult.isEmpty()) return ResponseEntity.notFound().build();
         var authenticatedUser = authenticatedUserResult.get();
-        var authenticatedUserResource = AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(authenticatedUser.left, authenticatedUser.right);
+        var authenticatedUserResource = AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(authenticatedUser.getLeft(), authenticatedUser.getRight());
         return ResponseEntity.ok(authenticatedUserResource);
     }
 }

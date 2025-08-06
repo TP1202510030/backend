@@ -9,21 +9,25 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.resources.controlactio
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.controlaction.ControlActionResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.controlaction.AddControlActionsToCurrentPhaseCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.controlaction.ControlActionResourceFromEntityAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/control_actions", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Control Actions", description = "Control Actions Management Endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class ControlActionController {
     private final ControlActionCommandService controlActionCommandService;
     private final ControlActionQueryService controlActionQueryService;
@@ -50,9 +54,12 @@ public class ControlActionController {
             @ApiResponse(responseCode = "200", description = "ControlActions added successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to add controlActions",
                     content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json")),
             @ApiResponse(responseCode = "404", description = "Crop not found or no current phase set",
                     content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_LAMBDA)
     public ResponseEntity<Void> addControlActionsToCurrentPhase(@PathVariable Long cropId,
                                                                 @RequestBody AddControlActionsToCurrentPhaseResource addControlActionsToCurrentPhaseResource) {
         var addControlActionsCommand = AddControlActionsToCurrentPhaseCommandFromResourceAssembler.toCommandFromResourceAssembler(
@@ -80,6 +87,14 @@ public class ControlActionController {
             description = "Retrieves a paginated list of controlActions associated with a given crop phase ID.",
             tags = {"Control Actions"}
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "ControlActions retrieved successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or unable to retrieve controlActions",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_PHASE_OWNER)
     public ResponseEntity<Page<ControlActionResource>> getControlActionsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
         var query = new GetAllControlActionsByCropPhaseIdQuery(cropPhaseId);
         Page<ControlAction> controlActionsPage = controlActionQueryService.handle(query, pageable);
@@ -99,6 +114,16 @@ public class ControlActionController {
             description = "Retrieve all controlActions for the current phase of a crop by its ID.",
             tags = {"Control Actions"}
     )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "ControlActions added successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input or unable to add controlActions",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "401", description = "Unauthorized",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "404", description = "Crop not found or no current phase set",
+                    content = @Content(mediaType = "application/json"))
+    })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<Page<ControlActionResource>> getControlActionsForCurrentPhase(
             @PathVariable Long cropId, @ParameterObject Pageable pageable) {
         var query = new GetControlActionsForCurrentPhaseByCropIdQuery(cropId);

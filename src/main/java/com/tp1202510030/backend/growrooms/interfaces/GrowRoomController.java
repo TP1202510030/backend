@@ -1,23 +1,28 @@
 package com.tp1202510030.backend.growrooms.interfaces;
 
-import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.CreateGrowRoomResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.DeviceCredentialsResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.GrowRoomResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.UpdateGrowRoomResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.CreateGrowRoomCommandFromResourceAssembler;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.DeviceCredentialsResourceFromDomainAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.GrowRoomResourceFromEntityAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.UpdateGrowRoomCommandFromResourceAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +30,7 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/api/v1/grow_rooms", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Grow Rooms", description = "Grow Rooms Management Endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class GrowRoomController {
     private final GrowRoomQueryService growRoomQueryService;
     private final GrowRoomCommandService growRoomCommandService;
@@ -42,33 +48,30 @@ public class GrowRoomController {
      */
     @PostMapping
     @Operation(
-            summary = "Create a new grow room",
-            description = "Creates a new grow room with the provided details and returns the created grow room resource.",
-            tags = {"Grow Rooms"}
+            summary = "Create a new grow room and provision its IoT device",
+            description = "Creates a new grow room and returns the credentials for its IoT device. These credentials should be downloaded immediately as they are not stored."
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Grow room created successfully",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = GrowRoomResource.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input or unable to create grow room",
-                    content = @Content(mediaType = "application/json"))
+            @ApiResponse(responseCode = "201", description = "Grow room created and device provisioned successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = DeviceCredentialsResource.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input or failed to provision device")
     })
-    public ResponseEntity<GrowRoomResource> createGrowRoom(@RequestParam Long companyId, @RequestBody CreateGrowRoomResource createGrowRoomResource) {
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<DeviceCredentialsResource> createGrowRoom(
+            @RequestParam Long companyId,
+            @RequestBody CreateGrowRoomResource createGrowRoomResource
+    ) {
         var createGrowRoomCommand = CreateGrowRoomCommandFromResourceAssembler.toCommandFromResource(createGrowRoomResource, companyId);
-        var growRoomId = growRoomCommandService.handle(createGrowRoomCommand);
 
-        if (growRoomId == 0L) {
+        var credentialsOptional = growRoomCommandService.handle(createGrowRoomCommand);
+
+        if (credentialsOptional.isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        var getGrowRoomByIdQuery = new GetGrowRoomByIdQuery(growRoomId);
-        var growRoom = growRoomQueryService.handle(getGrowRoomByIdQuery);
+        var credentialsResource = DeviceCredentialsResourceFromDomainAssembler.toResourceFromDomain(credentialsOptional.get());
 
-        if (growRoom.isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        var growRoomResource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(growRoom.get());
-        return ResponseEntity.ok(growRoomResource);
+        return new ResponseEntity<>(credentialsResource, HttpStatus.CREATED);
     }
 
     /**
@@ -87,6 +90,7 @@ public class GrowRoomController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Grow room updated"),
             @ApiResponse(responseCode = "404", description = "Grow room not found")})
+    @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
     public ResponseEntity<GrowRoomResource> updateGrowRoom(@PathVariable Long growRoomId, @RequestBody UpdateGrowRoomResource resource) {
         var updateGrowRoomCommand = UpdateGrowRoomCommandFromResourceAssembler.toCommandFromResource(growRoomId, resource);
         var updatedGrowRoom = growRoomCommandService.handle(updateGrowRoomCommand);
@@ -106,6 +110,7 @@ public class GrowRoomController {
             description = "Retrieves a list of grow rooms by the provided company ID.",
             tags = {"Grow Rooms"}
     )
+    @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
     public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@RequestParam Long companyId) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
         var growRooms = growRoomQueryService.handle(query);

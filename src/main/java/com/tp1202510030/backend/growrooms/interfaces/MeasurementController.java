@@ -10,22 +10,26 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.resources.measurement.
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.measurement.MeasurementResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.measurement.AddMeasurementsToCurrentPhaseCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.measurement.MeasurementResourceFromEntityAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/measurements", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Measurements", description = "Measurements Management Endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class MeasurementController {
     private final MeasurementCommandService measurementCommandService;
     private final MeasurementQueryService measurementQueryService;
@@ -55,6 +59,7 @@ public class MeasurementController {
             @ApiResponse(responseCode = "404", description = "Crop not found or no current phase set",
                     content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_LAMBDA)
     public ResponseEntity<Void> addMeasurementsToCurrentPhase(@PathVariable Long cropId,
                                                               @RequestBody AddMeasurementsToCurrentPhaseResource addMeasurementsToCurrentPhaseResource) {
         var addMeasurementsCommand = AddMeasurementsToCurrentPhaseCommandFromResourceAssembler.toCommandFromResourceAssembler(
@@ -88,6 +93,7 @@ public class MeasurementController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "204", description = "No measurements found for the grow room")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_PHASE_OWNER)
     public ResponseEntity<Page<MeasurementResource>> getMeasurementsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
         var query = new GetAllMeasurementsByCropPhaseIdQuery(cropPhaseId);
         Page<Measurement> measurementsPage = measurementQueryService.handle(query, pageable);
@@ -111,6 +117,7 @@ public class MeasurementController {
             @ApiResponse(responseCode = "200", description = "Measurements retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Crop not found or no current phase available")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<Page<MeasurementResource>> getMeasurementsForCurrentPhase(
             @PathVariable Long cropId, @ParameterObject Pageable pageable) {
         var query = new GetMeasurementsForCurrentPhaseByCropIdQuery(cropId);

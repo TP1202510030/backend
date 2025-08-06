@@ -9,18 +9,22 @@ import com.tp1202510030.backend.companies.interfaces.rest.resources.company.Upda
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CompanyResourceFromEntityAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CreateCompanyCommandFromResourceAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.UpdateCompanyCommandFromResourceAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "/api/v1/companies", produces = MediaType.APPLICATION_JSON_VALUE)
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Companies", description = "Companies Management Endpoints")
 public class CompanyController {
     private final CompanyQueryService companyQueryService;
@@ -49,6 +53,7 @@ public class CompanyController {
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to create company",
                     content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
     public ResponseEntity<CompanyResource> createCompany(@RequestBody CreateCompanyResource createCompanyResource) {
         var createCompanyCommand = CreateCompanyCommandFromResourceAssembler.toCommandFromResource(createCompanyResource);
 
@@ -74,6 +79,7 @@ public class CompanyController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Company updated"),
             @ApiResponse(responseCode = "404", description = "Company not found")})
+    @PreAuthorize(SecurityConstants.COMPANY_ADMIN_OR_HIGHER_AND_OWNER)
     public ResponseEntity<CompanyResource> updateCompany(@PathVariable Long companyId, @RequestBody UpdateCompanyResource resource) {
         var updateCompanyCommand = UpdateCompanyCommandFromResourceAssembler.toCommandFromResource(companyId, resource);
         var updatedCompany = companyCommandService.handle(updateCompanyCommand);
@@ -93,6 +99,7 @@ public class CompanyController {
             description = "Retrieves a company by the provided ID.",
             tags = {"Companies"}
     )
+    @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
     public ResponseEntity<CompanyResource> getCompanyById(@RequestParam Long id) {
         var getCompanyByIdQuery = new GetCompanyByIdQuery(id);
         var company = companyQueryService.handle(getCompanyByIdQuery);

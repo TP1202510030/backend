@@ -5,6 +5,7 @@ import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
 import com.tp1202510030.backend.iam.domain.services.UserQueryService;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.UserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -12,6 +13,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +41,7 @@ public class UsersController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully."),
             @ApiResponse(responseCode = "401", description = "Unauthorized.")})
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
     public ResponseEntity<List<UserResource>> getAllUsers() {
         var getAllUsersQuery = new GetAllUsersQuery();
         var users = userQueryService.handle(getAllUsersQuery);
@@ -62,6 +65,7 @@ public class UsersController {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully."),
             @ApiResponse(responseCode = "404", description = "User not found."),
             @ApiResponse(responseCode = "401", description = "Unauthorized.")})
+    @PreAuthorize(SecurityConstants.ADMIN_OR_USER_SELF)
     public ResponseEntity<UserResource> getUserById(@PathVariable Long userId) {
         var getUserByIdQuery = new GetUserByIdQuery(userId);
         var user = userQueryService.handle(getUserByIdQuery);

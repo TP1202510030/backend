@@ -33,7 +33,7 @@ public class BearerAuthorizationRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             var token = tokenService.getBearerTokenFrom(request);
-            LOGGER.info("Token: {}", token);
+            LOGGER.debug("Token: {}", token);
             if (Objects.nonNull(token) && tokenService.validateToken(token)) {
                 var username = tokenService.getUsernameFromToken(token);
                 var userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(username);

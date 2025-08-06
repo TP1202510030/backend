@@ -1,9 +1,11 @@
 package com.tp1202510030.backend.iam.infrastructure.authorization.sfs.configuration;
 
+import com.tp1202510030.backend.iam.infrastructure.authorization.sfs.pipeline.ApiKeyAuthenticationFilter;
 import com.tp1202510030.backend.iam.infrastructure.authorization.sfs.pipeline.BearerAuthorizationRequestFilter;
 import com.tp1202510030.backend.iam.infrastructure.hashing.bcrypt.BCryptHashingService;
 import com.tp1202510030.backend.iam.infrastructure.tokens.jwt.BearerTokenService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -30,6 +32,9 @@ public class WebSecurityConfiguration {
     private final BCryptHashingService hashingService;
     private final AuthenticationEntryPoint unauthorizedRequestHandlerEntryPoint;
 
+    @Value("${app.security.api-key.secret}")
+    private String apiKeySecret;
+
     public WebSecurityConfiguration(
             @Qualifier("defaultUserDetailsService")
             UserDetailsService userDetailsService,
@@ -45,6 +50,11 @@ public class WebSecurityConfiguration {
     @Bean
     public BearerAuthorizationRequestFilter authorizationRequestFilter() {
         return new BearerAuthorizationRequestFilter(tokenService, userDetailsService);
+    }
+
+    @Bean
+    public ApiKeyAuthenticationFilter apiKeyAuthenticationFilter() {
+        return new ApiKeyAuthenticationFilter(apiKeySecret);
     }
 
     @Bean
@@ -92,10 +102,12 @@ public class WebSecurityConfiguration {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(permittedRequestPatterns).permitAll()
                 //.requestMatchers(HttpMethod.GET, "/api/v1/grow_rooms").hasRole("ADMIN")
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
         );
         http.authenticationProvider(authenticationProvider());
         http.addFilterBefore(authorizationRequestFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(apiKeyAuthenticationFilter(), BearerAuthorizationRequestFilter.class);
+
         return http.build();
     }
 

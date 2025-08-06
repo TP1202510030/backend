@@ -1,7 +1,7 @@
 package com.tp1202510030.backend.iam.application.acl;
 
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
-import com.tp1202510030.backend.iam.domain.model.commands.SignUpCommand;
+import com.tp1202510030.backend.iam.domain.model.commands.CreateUserCommand;
 import com.tp1202510030.backend.iam.domain.model.entities.Role;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByUsernameQuery;
@@ -26,16 +26,13 @@ public class IamContextFacadeImpl implements IamContextFacade {
     }
 
     @Override
-    public Optional<Long> createUser(String username, String password) {
-        var signUpCommand = new SignUpCommand(username, password, List.of(Role.getDefaultRole()));
-        return userCommandService.handle(signUpCommand).map(AuditableAbstractAggregateRoot::getId);
-    }
-
-    @Override
-    public Optional<Long> createUser(String username, String password, List<String> roleNames) {
+    public Optional<Long> createUser(String username, String password, Long companyId, List<String> roleNames) {
+        if (companyId == null) {
+            throw new IllegalArgumentException("Company ID cannot be null when creating a user through the facade.");
+        }
         var roles = roleNames == null ? new ArrayList<Role>() : roleNames.stream().map(Role::toRoleFromName).toList();
-        var signUpCommand = new SignUpCommand(username, password, roles);
-        return userCommandService.handle(signUpCommand).map(AuditableAbstractAggregateRoot::getId);
+        var command = new CreateUserCommand(username, password, companyId, roles);
+        return userCommandService.handle(command).map(AuditableAbstractAggregateRoot::getId);
     }
 
     @Override

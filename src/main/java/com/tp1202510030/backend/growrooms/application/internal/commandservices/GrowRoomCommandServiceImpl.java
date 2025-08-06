@@ -6,8 +6,10 @@ import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.Activat
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.CreateGrowRoomCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeactivateGrowRoomCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.UpdateGrowRoomCommand;
+import com.tp1202510030.backend.growrooms.domain.model.valueobjects.DeviceCredentials;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.GrowRoomName;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
+import com.tp1202510030.backend.growrooms.domain.services.iot.IotDeviceProvisioningService;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.GrowRoomRepository;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
@@ -20,24 +22,30 @@ import java.util.Optional;
 public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
     private final GrowRoomRepository growRoomRepository;
     private final CompanyRepository companyRepository;
+    private final IotDeviceProvisioningService iotProvisioningService;
 
-    public GrowRoomCommandServiceImpl(GrowRoomRepository growRoomRepository, CompanyRepository companyRepository) {
+    public GrowRoomCommandServiceImpl(
+            GrowRoomRepository growRoomRepository,
+            CompanyRepository companyRepository,
+            IotDeviceProvisioningService iotProvisioningService
+    ) {
         this.growRoomRepository = growRoomRepository;
         this.companyRepository = companyRepository;
+        this.iotProvisioningService = iotProvisioningService;
     }
 
     @Override
     @Transactional
-    public Long handle(CreateGrowRoomCommand command) {
+    public Optional<DeviceCredentials> handle(CreateGrowRoomCommand command) {
         var company = companyRepository.findById(command.companyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
 
 
         GrowRoomName growRoomName = new GrowRoomName(command.name());
 
-        growRoomRepository.findByName(growRoomName).ifPresent(g -> {
-            throw new ResourceAlreadyExistsException("Grow room", "name", g.getGrowRoomName());
-        });
+        if (growRoomRepository.existsByNameAndCompanyId(growRoomName, command.companyId())) {
+            throw new ResourceAlreadyExistsException("Grow room", "name", command.name());
+        }
 
         var growRoom = new GrowRoom(
                 command.name(),
@@ -45,7 +53,7 @@ public class GrowRoomCommandServiceImpl implements GrowRoomCommandService {
                 company
         );
         growRoomRepository.save(growRoom);
-        return growRoom.getId();
+        return iotProvisioningService.provisionDevice(company.getId(), growRoom.getId());
     }
 
     @Override

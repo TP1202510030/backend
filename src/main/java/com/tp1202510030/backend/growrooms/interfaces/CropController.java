@@ -13,17 +13,20 @@ import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CropRes
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.FinishCropResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.crop.CreateCropCommandFromResourceAssembler;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.crop.CropResourceFromEntityAssembler;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping(value = "/api/v1/crops", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Crops", description = "Crop Management Endpoints")
+@SecurityRequirement(name = "bearerAuth")
 public class CropController {
 
     private final CropCommandService cropCommandService;
@@ -60,6 +64,7 @@ public class CropController {
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to create crop",
                     content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
     public ResponseEntity<CropResource> createCrop(@RequestParam Long growRoomId, @RequestBody CreateCropResource createCropResource) {
         var createCropCommand = CreateCropCommandFromResourceAssembler.toCommandFromResource(createCropResource, growRoomId);
         var cropId = cropCommandService.handle(createCropCommand);
@@ -79,7 +84,6 @@ public class CropController {
         return ResponseEntity.ok(cropResource);
     }
 
-
     @PostMapping("/advancePhase/{cropId}")
     @Operation(
             summary = "Advance the crop phase",
@@ -93,6 +97,7 @@ public class CropController {
             @ApiResponse(responseCode = "404", description = "Crop not found or no phases available",
                     content = @Content(mediaType = "application/json"))
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<Void> advanceCropPhase(@PathVariable Long cropId) {
         cropCommandService.handle(new AdvanceCropPhaseCommand(cropId));
         return ResponseEntity.ok().build();
@@ -109,6 +114,7 @@ public class CropController {
             @ApiResponse(responseCode = "400", description = "Invalid input, e.g., crop not on last phase"),
             @ApiResponse(responseCode = "404", description = "Crop not found")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<Void> finishCrop(@PathVariable Long cropId, @RequestBody FinishCropResource resource) {
         var command = new FinishCropCommand(cropId, resource.totalProduction());
         if (resource.totalProduction() == null) {
@@ -137,6 +143,7 @@ public class CropController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "404", description = "Crop not found")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<CropResource> getCropById(@PathVariable Long cropId) {
         var query = new GetCropByIdQuery(cropId);
         var crop = cropQueryService.handle(query)
@@ -163,6 +170,7 @@ public class CropController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "204", description = "No crops found for the grow room")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
     public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
@@ -189,6 +197,7 @@ public class CropController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "204", description = "No finished crops found for the requested grow room")
     })
+    @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
     public ResponseEntity<List<CropResource>> getFinishedCrops(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetFinishedCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
