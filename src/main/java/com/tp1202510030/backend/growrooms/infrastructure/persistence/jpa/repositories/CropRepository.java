@@ -2,17 +2,24 @@ package com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.reposi
 
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.entities.CropPhase;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface CropRepository extends JpaRepository<Crop, Long> {
-    List<Crop> findByEndDateIsNotNull();
+    /**
+     * Finds all crops for a given grow room that have a non-null end date.
+     *
+     * @param growRoomId The ID of the grow room.
+     * @return A list of finished crops.
+     */
+    Page<Crop> findByGrowRoomIdAndEndDateIsNotNull(Long growRoomId, Pageable pageable);
 
-    List<Crop> findAllByGrowRoomId(Long growRoomId);
+    Page<Crop> findAllByGrowRoomId(Long growRoomId, Pageable pageable);
 
     Optional<Crop> findFirstByGrowRoomIdAndEndDateIsNull(Long growRoomId);
 

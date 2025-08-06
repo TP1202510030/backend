@@ -3,17 +3,19 @@ package com.tp1202510030.backend.growrooms.application.internal.queryservices;
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropsByGrowRoomIdQuery;
-import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetFinishedCropsQuery;
+import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetFinishedCropsByGrowRoomIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropQueryService;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CropQueryServiceImpl implements CropQueryService {
     private final CropRepository cropRepository;
+
     public CropQueryServiceImpl(CropRepository cropRepository) {
         this.cropRepository = cropRepository;
     }
@@ -24,12 +26,12 @@ public class CropQueryServiceImpl implements CropQueryService {
     }
 
     @Override
-    public List<Crop> handle(GetCropsByGrowRoomIdQuery query) {
-        return this.cropRepository.findAllByGrowRoomId(query.growRoomId());
+    public Page<Crop> handle(GetCropsByGrowRoomIdQuery query, Pageable pageable) {
+        return this.cropRepository.findAllByGrowRoomId(query.growRoomId(), pageable);
     }
 
     @Override
-    public List<Crop> handle(GetFinishedCropsQuery query) {
-        return this.cropRepository.findByEndDateIsNotNull();
+    public Page<Crop> handle(GetFinishedCropsByGrowRoomIdQuery query, Pageable pageable) {
+        return this.cropRepository.findByGrowRoomIdAndEndDateIsNotNull(query.growRoomId(), pageable);
     }
 }

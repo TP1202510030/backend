@@ -5,7 +5,7 @@ import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCrop
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.FinishCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropsByGrowRoomIdQuery;
-import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetFinishedCropsQuery;
+import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetFinishedCropsByGrowRoomIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.crop.CropQueryService;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CreateCropResource;
@@ -19,6 +19,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,6 +111,10 @@ public class CropController {
     })
     public ResponseEntity<Void> finishCrop(@PathVariable Long cropId, @RequestBody FinishCropResource resource) {
         var command = new FinishCropCommand(cropId, resource.totalProduction());
+        if (resource.totalProduction() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         cropCommandService.handle(command);
         return ResponseEntity.ok().build();
     }
@@ -132,19 +139,17 @@ public class CropController {
     })
     public ResponseEntity<CropResource> getCropById(@PathVariable Long cropId) {
         var query = new GetCropByIdQuery(cropId);
-        Optional<Crop> cropOpt = cropQueryService.handle(query);
-
         var crop = cropQueryService.handle(query)
                 .orElseThrow(() -> new IllegalArgumentException("Crop with ID " + cropId + " not found."));
 
         var cropResource = CropResourceFromEntityAssembler.toResourceFromEntity(crop);
+
         return ResponseEntity.ok(cropResource);
     }
 
     /**
      * Get crops by grow room ID
      *
-     * @param growRoomId The grow room ID to filter crops
      * @return List of CropResources associated to the grow room
      */
     @GetMapping
@@ -158,9 +163,9 @@ public class CropController {
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "204", description = "No crops found for the grow room")
     })
-    public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@RequestParam Long growRoomId) {
+    public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetCropsByGrowRoomIdQuery(growRoomId);
-        List<Crop> crops = cropQueryService.handle(query);
+        Page<Crop> crops = cropQueryService.handle(query, pageable);
 
         if (crops.isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -175,18 +180,18 @@ public class CropController {
 
     @GetMapping("/finished")
     @Operation(
-            summary = "Get finished crops",
-            description = "Retrieves a list of crops that have an end date (finished crops).",
+            summary = "Get finished crops by grow room ID",
+            description = "Retrieves a list of crops that have an end date (finished crops) by grow room ID.",
             tags = {"Crops"}
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Finished crops retrieved successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
-            @ApiResponse(responseCode = "204", description = "No finished crops found")
+            @ApiResponse(responseCode = "204", description = "No finished crops found for the requested grow room")
     })
-    public ResponseEntity<List<CropResource>> getFinishedCrops() {
-        var query = new GetFinishedCropsQuery();
-        List<Crop> crops = cropQueryService.handle(query);
+    public ResponseEntity<List<CropResource>> getFinishedCrops(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
+        var query = new GetFinishedCropsByGrowRoomIdQuery(growRoomId);
+        Page<Crop> crops = cropQueryService.handle(query, pageable);
 
         if (crops.isEmpty()) {
             return ResponseEntity.noContent().build();
