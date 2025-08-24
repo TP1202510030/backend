@@ -8,4 +8,16 @@ public record CreateCropPhaseResource(
         String name,
         Duration phaseDuration,
         ParameterThresholds parameterThresholds
-) {}
+) {
+    public CreateCropPhaseResource {
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null or negative");
+        }
+        if (phaseDuration == null || phaseDuration.isNegative() || phaseDuration.isZero()) {
+            throw new IllegalArgumentException("phaseDuration cannot be null, negative, or zero");
+        }
+        if (parameterThresholds == null) {
+            throw new IllegalArgumentException("parameterThresholds cannot be null");
+        }
+    }
+}

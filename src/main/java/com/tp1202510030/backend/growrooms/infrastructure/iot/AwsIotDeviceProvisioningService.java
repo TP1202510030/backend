@@ -2,6 +2,8 @@ package com.tp1202510030.backend.growrooms.infrastructure.iot;
 
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.DeviceCredentials;
 import com.tp1202510030.backend.growrooms.domain.services.iot.IotDeviceProvisioningService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.iot.IotClient;
@@ -15,6 +17,7 @@ import java.util.Optional;
 @Service
 public class AwsIotDeviceProvisioningService implements IotDeviceProvisioningService {
     private final IotClient iotClient;
+    private static final Logger logger = LoggerFactory.getLogger(AwsIotDeviceProvisioningService.class);
 
     @Value("${aws.iot.account-id}")
     private String awsAccountId;
@@ -52,8 +55,8 @@ public class AwsIotDeviceProvisioningService implements IotDeviceProvisioningSer
                     certificateArn
             ));
         } catch (IotException e) {
-            System.err.println("Failed to provision device in AWS IoT: " + e.getMessage());
-            return Optional.empty();
+            logger.error("Failed to provision device in AWS IoT. Error: {}", e.getMessage());
+            throw new RuntimeException("Failed to provision device in AWS IoT: " + e.getMessage(), e);
         }
     }
 

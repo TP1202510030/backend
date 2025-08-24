@@ -69,4 +69,15 @@ public record CreateCropResource(
         Long growRoomId,
         List<CreateCropPhaseResource> phases
 ) {
+    public CreateCropResource {
+        if (sensorActivationFrequency == null || sensorActivationFrequency.isNegative() || sensorActivationFrequency.isZero()) {
+            throw new IllegalArgumentException("sensorActivationFrequency cannot be null, negative, or zero");
+        }
+        if (growRoomId == null || growRoomId <= 0) {
+            throw new IllegalArgumentException("growRoomId cannot be null or negative");
+        }
+        if (phases == null || phases.isEmpty()) {
+            throw new IllegalArgumentException("phases cannot be null or empty");
+        }
+    }
 }

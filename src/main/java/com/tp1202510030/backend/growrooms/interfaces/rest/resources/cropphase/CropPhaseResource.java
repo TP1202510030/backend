@@ -10,4 +10,18 @@ public record CropPhaseResource(
         Duration duration,
         ParameterThresholds thresholds
 ) {
+    public CropPhaseResource {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException("id cannot be null or negative");
+        }
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name cannot be null or empty");
+        }
+        if (duration == null || duration.isNegative() || duration.isZero()) {
+            throw new IllegalArgumentException("duration cannot be null, negative, or zero");
+        }
+        if (thresholds == null) {
+            throw new IllegalArgumentException("thresholds cannot be null");
+        }
+    }
 }
