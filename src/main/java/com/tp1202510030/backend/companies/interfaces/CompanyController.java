@@ -93,15 +93,15 @@ public class CompanyController {
         return ResponseEntity.ok(updatedCompanyResource);
     }
 
-    @GetMapping
+    @GetMapping("/{companyId}")
     @Operation(
             summary = "Get company by ID",
             description = "Retrieves a company by the provided ID.",
             tags = {"Companies"}
     )
     @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
-    public ResponseEntity<CompanyResource> getCompanyById(@RequestParam Long id) {
-        var getCompanyByIdQuery = new GetCompanyByIdQuery(id);
+    public ResponseEntity<CompanyResource> getCompanyById(@PathVariable Long companyId) {
+        var getCompanyByIdQuery = new GetCompanyByIdQuery(companyId);
         var company = companyQueryService.handle(getCompanyByIdQuery);
 
         if (company.isEmpty()) {
