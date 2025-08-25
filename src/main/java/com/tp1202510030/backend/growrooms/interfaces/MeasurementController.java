@@ -27,7 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/measurements", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Measurements", description = "Measurements Management Endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class MeasurementController {
@@ -46,7 +46,7 @@ public class MeasurementController {
      * @param addMeasurementsToCurrentPhaseResource The list of measurements to add to the current phase
      * @return A response indicating success or failure
      */
-    @PostMapping("/addToCurrentPhase/{cropId}")
+    @PostMapping("/crops/{cropId}/measurements")
     @Operation(
             summary = "Add multiple measurements to the current phase of a crop",
             description = "Adds multiple measurements to the current phase of the specified crop and returns a success message.",
@@ -78,11 +78,11 @@ public class MeasurementController {
     /**
      * Get measurements by crop phase ID
      *
-     * @param cropPhaseId The crop phase ID to filter crops
-     * @param pageable    The pagination information
+     * @param phaseId  The crop phase ID to filter crops
+     * @param pageable The pagination information
      * @return Page of MeasurementResources associated to the crop phase
      */
-    @GetMapping
+    @GetMapping("/phases/{phaseId}/measurements")
     @Operation(
             summary = "Get measurements by crop phase ID",
             description = "Retrieves a paginated list of measurements associated with a given crop phase ID.",
@@ -94,8 +94,10 @@ public class MeasurementController {
             @ApiResponse(responseCode = "204", description = "No measurements found for the grow room")
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_PHASE_OWNER)
-    public ResponseEntity<Page<MeasurementResource>> getMeasurementsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
-        var query = new GetAllMeasurementsByCropPhaseIdQuery(cropPhaseId);
+    public ResponseEntity<Page<MeasurementResource>> getMeasurementsByCropPhaseId(
+            @PathVariable Long phaseId,
+            @ParameterObject Pageable pageable) {
+        var query = new GetAllMeasurementsByCropPhaseIdQuery(phaseId);
         Page<Measurement> measurementsPage = measurementQueryService.handle(query, pageable);
 
         if (measurementsPage.isEmpty()) {
@@ -107,7 +109,7 @@ public class MeasurementController {
         return ResponseEntity.ok(resources);
     }
 
-    @GetMapping("/{cropId}")
+    @GetMapping("/crops/{cropId}/measurements/current")
     @Operation(
             summary = "Get measurements for the current phase of a crop",
             description = "Retrieve all measurements for the current phase of a crop by its ID.",
@@ -119,7 +121,8 @@ public class MeasurementController {
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_OWNER)
     public ResponseEntity<Page<MeasurementResource>> getMeasurementsForCurrentPhase(
-            @PathVariable Long cropId, @ParameterObject Pageable pageable) {
+            @PathVariable Long cropId,
+            @ParameterObject Pageable pageable) {
         var query = new GetMeasurementsForCurrentPhaseByCropIdQuery(cropId);
         Page<Measurement> measurementsPage = measurementQueryService.handle(query, pageable);
 

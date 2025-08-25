@@ -25,7 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(value = "/api/v1/control_actions", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Control Actions", description = "Control Actions Management Endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class ControlActionController {
@@ -44,7 +44,7 @@ public class ControlActionController {
      * @param addControlActionsToCurrentPhaseResource The list of control actions to add to the current phase
      * @return A response indicating success or failure
      */
-    @PostMapping("/addToCurrentPhase/{cropId}")
+    @PostMapping("/crops/{cropId}/control-actions")
     @Operation(
             summary = "Add multiple control actions to the current phase of a crop",
             description = "Adds multiple control actions to the current phase of the specified crop and returns a success message.",
@@ -78,10 +78,10 @@ public class ControlActionController {
     /**
      * Get control actions by crop phase ID
      *
-     * @param cropPhaseId The crop phase ID to filter crops
+     * @param phaseId The crop phase ID to filter crops
      * @return List of ControlActionResources associated to the crop phase
      */
-    @GetMapping
+    @GetMapping("/phases/{phaseId}/control-actions")
     @Operation(
             summary = "Get control actions by crop phase ID",
             description = "Retrieves a paginated list of controlActions associated with a given crop phase ID.",
@@ -95,8 +95,8 @@ public class ControlActionController {
                     content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_CROP_PHASE_OWNER)
-    public ResponseEntity<Page<ControlActionResource>> getControlActionsByCropPhaseId(@RequestParam Long cropPhaseId, @ParameterObject Pageable pageable) {
-        var query = new GetAllControlActionsByCropPhaseIdQuery(cropPhaseId);
+    public ResponseEntity<Page<ControlActionResource>> getControlActionsByCropPhaseId(@PathVariable Long phaseId, @ParameterObject Pageable pageable) {
+        var query = new GetAllControlActionsByCropPhaseIdQuery(phaseId);
         Page<ControlAction> controlActionsPage = controlActionQueryService.handle(query, pageable);
 
         if (controlActionsPage.isEmpty()) {
@@ -108,7 +108,7 @@ public class ControlActionController {
         return ResponseEntity.ok(resources);
     }
 
-    @GetMapping("/{cropId}")
+    @GetMapping("/crops/{cropId}/control-actions/current")
     @Operation(
             summary = "Get control Actions for the current phase of a crop",
             description = "Retrieve all controlActions for the current phase of a crop by its ID.",

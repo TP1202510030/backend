@@ -2,6 +2,7 @@ package com.tp1202510030.backend.growrooms.interfaces.rest.transform.controlacti
 
 import com.tp1202510030.backend.growrooms.domain.model.entities.ControlAction;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.controlaction.ControlActionResource;
+import com.tp1202510030.backend.shared.interfaces.rest.transform.DateFormatter;
 
 public class ControlActionResourceFromEntityAssembler {
     public static ControlActionResource toResourceFromEntity(ControlAction entity) {
@@ -12,7 +13,7 @@ public class ControlActionResourceFromEntityAssembler {
                 entity.getTriggeringReason(),
                 entity.getTriggeringParameterType(),
                 entity.getTriggeringMeasurementValue(),
-                entity.getTimestamp(),
+                DateFormatter.format(entity.getTimestamp()),
                 entity.getCropPhase().getId()
         );
     }

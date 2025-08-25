@@ -1,5 +1,6 @@
 package com.tp1202510030.backend.growrooms.interfaces;
 
+import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(value = "/api/v1/grow_rooms", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Grow Rooms", description = "Grow Rooms Management Endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class GrowRoomController {
@@ -81,7 +82,7 @@ public class GrowRoomController {
      * @param resource   The {@link UpdateGrowRoomResource} instance
      * @return The {@link GrowRoomResource} resource for the updated growRoom
      */
-    @PutMapping("/{growRoomId}")
+    @PutMapping("/grow-rooms/{growRoomId}")
     @Operation(
             summary = "Update grow room",
             description = "Update grow room",
@@ -104,14 +105,14 @@ public class GrowRoomController {
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
 
-    @GetMapping
+    @GetMapping("/companies/{companyId}/grow-rooms")
     @Operation(
             summary = "Get grow rooms by company ID",
             description = "Retrieves a list of grow rooms by the provided company ID.",
             tags = {"Grow Rooms"}
     )
     @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
-    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@RequestParam Long companyId) {
+    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@PathVariable Long companyId) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
         var growRooms = growRoomQueryService.handle(query);
 
@@ -124,5 +125,24 @@ public class GrowRoomController {
                 .toList();
 
         return ResponseEntity.ok(resources);
+    }
+
+    @GetMapping("/grow-rooms/{id}")
+    @Operation(
+            summary = "Get a grow room by ID",
+            description = "Retrieves a grow room by its ID.",
+            tags = {"Grow Rooms"}
+    )
+    @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
+    public ResponseEntity<GrowRoomResource> getGrowRoomById(@PathVariable Long id) {
+        var query = new GetGrowRoomByIdQuery(id);
+        var growRoom = growRoomQueryService.handle(query);
+
+        if (growRoom.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var resource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(growRoom.get());
+        return ResponseEntity.ok(resource);
     }
 }

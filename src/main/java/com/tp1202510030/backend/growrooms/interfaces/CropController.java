@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = "/api/v1/crops", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Crops", description = "Crop Management Endpoints")
 @SecurityRequirement(name = "bearerAuth")
 public class CropController {
@@ -52,9 +52,9 @@ public class CropController {
      * @param createCropResource The resource containing crop details including sensor frequency and phases
      * @return The created CropResource with full crop details
      */
-    @PostMapping
+    @PostMapping("/grow-rooms/{growRoomId}/crops")
     @Operation(
-            summary = "Create a new crop",
+            summary = "Create a new crop for a grow room",
             description = "Creates a new crop associated to a grow room with sensor activation frequency and defined phases.",
             tags = {"Crops"}
     )
@@ -62,10 +62,12 @@ public class CropController {
             @ApiResponse(responseCode = "200", description = "Crop created successfully",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = CropResource.class))),
             @ApiResponse(responseCode = "400", description = "Invalid input or unable to create crop",
+                    content = @Content(mediaType = "application/json")),
+            @ApiResponse(responseCode = "500", description = "Internal server error",
                     content = @Content(mediaType = "application/json"))
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<CropResource> createCrop(@RequestParam Long growRoomId, @RequestBody CreateCropResource createCropResource) {
+    public ResponseEntity<CropResource> createCrop(@PathVariable Long growRoomId, @RequestBody CreateCropResource createCropResource) {
         var createCropCommand = CreateCropCommandFromResourceAssembler.toCommandFromResource(createCropResource, growRoomId);
         var cropId = cropCommandService.handle(createCropCommand);
 
@@ -84,7 +86,7 @@ public class CropController {
         return ResponseEntity.ok(cropResource);
     }
 
-    @PostMapping("/advancePhase/{cropId}")
+    @PostMapping("/crops/{cropId}/advance-phase")
     @Operation(
             summary = "Advance the crop phase",
             description = "Advances the current phase of the specified crop to the next phase.",
@@ -103,7 +105,7 @@ public class CropController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{cropId}/finish")
+    @PostMapping("/crops/{cropId}/finish")
     @Operation(
             summary = "Finish a crop and record total production",
             description = "Marks a crop as finished, sets its end date, and records the total production.",
@@ -132,7 +134,7 @@ public class CropController {
      * @param cropId The crop ID to retrieve
      * @return The CropResource associated with the given crop ID
      */
-    @GetMapping("/{cropId}")
+    @GetMapping("/crops/{cropId}")
     @Operation(
             summary = "Get crop by ID",
             description = "Retrieves a crop by its ID.",
@@ -159,7 +161,7 @@ public class CropController {
      *
      * @return List of CropResources associated to the grow room
      */
-    @GetMapping
+    @GetMapping("/grow-rooms/{growRoomId}/crops")
     @Operation(
             summary = "Get crops by grow room ID",
             description = "Retrieves a list of crops associated with a given grow room ID.",
@@ -171,7 +173,7 @@ public class CropController {
             @ApiResponse(responseCode = "204", description = "No crops found for the grow room")
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
+    public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
 
@@ -186,7 +188,7 @@ public class CropController {
         return ResponseEntity.ok(resources);
     }
 
-    @GetMapping("/finished")
+    @GetMapping("/grow-rooms/{growRoomId}/crops/finished")
     @Operation(
             summary = "Get finished crops by grow room ID",
             description = "Retrieves a list of crops that have an end date (finished crops) by grow room ID.",
@@ -198,7 +200,7 @@ public class CropController {
             @ApiResponse(responseCode = "204", description = "No finished crops found for the requested grow room")
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<List<CropResource>> getFinishedCrops(@RequestParam Long growRoomId, @ParameterObject Pageable pageable) {
+    public ResponseEntity<List<CropResource>> getFinishedCrops(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetFinishedCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
 

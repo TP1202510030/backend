@@ -4,8 +4,6 @@ import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ActuatorType
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ControlActionType;
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.Parameters;
 
-import java.util.Date;
-
 public record ControlActionResource(
         Long id,
         ActuatorType actuatorType,
@@ -13,7 +11,7 @@ public record ControlActionResource(
         String triggeringReason,
         Parameters triggeringParameterType,
         Double triggeringMeasurementValue,
-        Date timestamp,
+        String timestamp,
         Long cropPhaseId
 ) {
 }

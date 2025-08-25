@@ -2,12 +2,10 @@ package com.tp1202510030.backend.growrooms.interfaces.rest.resources.cropphase;
 
 import com.tp1202510030.backend.growrooms.domain.model.valueobjects.ParameterThresholds;
 
-import java.time.Duration;
-
 public record CropPhaseResource(
         Long id,
         String name,
-        Duration duration,
+        String duration,
         ParameterThresholds thresholds
 ) {
     public CropPhaseResource {
@@ -17,7 +15,7 @@ public record CropPhaseResource(
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("name cannot be null or empty");
         }
-        if (duration == null || duration.isNegative() || duration.isZero()) {
+        if (duration == null || duration.isBlank()) {
             throw new IllegalArgumentException("duration cannot be null, negative, or zero");
         }
         if (thresholds == null) {

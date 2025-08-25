@@ -4,6 +4,8 @@ import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.crop.CropResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.resources.cropphase.CropPhaseResource;
 import com.tp1202510030.backend.growrooms.interfaces.rest.transform.cropphase.CropPhaseResourceFromEntityAssembler;
+import com.tp1202510030.backend.shared.interfaces.rest.transform.DateFormatter;
+import com.tp1202510030.backend.shared.interfaces.rest.transform.DurationFormatter;
 
 import java.util.List;
 
@@ -20,9 +22,9 @@ public class CropResourceFromEntityAssembler {
 
         return new CropResource(
                 entity.getId(),
-                entity.getStartDate(),
-                entity.getEndDate(),
-                entity.getSensorActivationFrequency(),
+                DateFormatter.format(entity.getStartDate()),
+                DateFormatter.format(entity.getEndDate()),
+                DurationFormatter.format(entity.getSensorActivationFrequency()),
                 entity.getGrowRoom().getId(),
                 phaseResources,
                 currentPhaseResource,
