@@ -47,7 +47,7 @@ public class GrowRoomController {
      * @param createGrowRoomResource The grow room to be created
      * @return The { @link growRoomResource} resource for the created grow room
      */
-    @PostMapping
+    @PostMapping("/grow-rooms")
     @Operation(
             summary = "Create a new grow room and provision its IoT device",
             description = "Creates a new grow room and returns the credentials for its IoT device. These credentials should be downloaded immediately as they are not stored."
