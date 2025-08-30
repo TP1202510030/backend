@@ -20,13 +20,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -112,17 +113,16 @@ public class GrowRoomController {
             tags = {"Grow Rooms"}
     )
     @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
-    public ResponseEntity<List<GrowRoomResource>> getGrowRoomsByCompanyId(@PathVariable Long companyId) {
+    public ResponseEntity<Page<GrowRoomResource>> getGrowRoomsByCompanyId(@PathVariable Long companyId, @ParameterObject Pageable pageable) {
         var query = new GetGrowRoomsByCompanyIdQuery(companyId);
-        var growRooms = growRoomQueryService.handle(query);
+        var growRooms = growRoomQueryService.handle(query, pageable);
 
         if (growRooms.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = growRooms.stream()
-                .map(GrowRoomResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = growRooms
+                .map(GrowRoomResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }

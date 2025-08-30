@@ -12,6 +12,7 @@ import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.reposit
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.GrowRoomRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.MeasurementRepository;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,12 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
     private final MeasurementRepository measurementRepository;
     private final ControlActionRepository controlActionRepository;
 
-    public GrowRoomQueryServiceImpl(GrowRoomRepository growRoomRepository, CropRepository cropRepository, MeasurementRepository measurementRepository, ControlActionRepository controlActionRepository) {
+    public GrowRoomQueryServiceImpl(
+            GrowRoomRepository growRoomRepository,
+            CropRepository cropRepository,
+            MeasurementRepository measurementRepository,
+            ControlActionRepository controlActionRepository
+    ) {
         this.growRoomRepository = growRoomRepository;
         this.cropRepository = cropRepository;
         this.measurementRepository = measurementRepository;
@@ -40,11 +46,9 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
     }
 
     @Override
-    public List<GrowRoom> handle(GetGrowRoomsByCompanyIdQuery query) {
-        List<GrowRoom> growRooms = growRoomRepository.findAllByCompanyId(query.companyId());
-        return growRooms.stream()
-                .map(this::populateGrowRoomDetails)
-                .collect(Collectors.toList());
+    public Page<GrowRoom> handle(GetGrowRoomsByCompanyIdQuery query, Pageable pageable) {
+        Page<GrowRoom> growRooms = growRoomRepository.findAllByCompanyId(query.companyId(), pageable);
+        return growRooms.map(this::populateGrowRoomDetails);
     }
 
     private GrowRoom populateGrowRoomDetails(GrowRoom growRoom) {
