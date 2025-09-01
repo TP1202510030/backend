@@ -62,5 +62,13 @@ public class ParameterThresholds {
             default -> throw new IllegalArgumentException("Unknown parameter" + parameter);
         };
     }
+
+    public boolean hasNullValues() {
+        return airTemperatureMin == null || airTemperatureMax == null ||
+                airHumidityMin == null || airHumidityMax == null ||
+                carbonDioxideMin == null || carbonDioxideMax == null ||
+                soilTemperatureMin == null || soilTemperatureMax == null ||
+                soilMoistureMin == null || soilMoistureMax == null;
+    }
 }
 

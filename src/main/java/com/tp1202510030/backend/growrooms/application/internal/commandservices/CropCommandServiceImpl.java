@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class CropCommandServiceImpl implements CropCommandService {
@@ -37,6 +38,12 @@ public class CropCommandServiceImpl implements CropCommandService {
     @Override
     @Transactional
     public Long handle(CreateCropCommand command) {
+        command.phases().forEach(phaseCommand -> {
+            if (Objects.isNull(phaseCommand.parameterThresholds())) {
+                throw new IllegalArgumentException("Parameter thresholds cannot be null.");
+            }
+        });
+
         var growRoomOpt = growRoomQueryService.handle(new GetGrowRoomByIdQuery(command.growRoomId()));
         if (growRoomOpt.isEmpty()) {
             throw new IllegalArgumentException("Grow room with ID " + command.growRoomId() + " not found");
@@ -48,10 +55,10 @@ public class CropCommandServiceImpl implements CropCommandService {
         }
 
         List<CropPhase> cropPhases = command.phases().stream()
-                .map(phaseCmd -> new CropPhase(
-                        phaseCmd.name(),
-                        phaseCmd.phaseDuration(),
-                        phaseCmd.parameterThresholds()
+                .map(phaseCommand -> new CropPhase(
+                        phaseCommand.name(),
+                        phaseCommand.phaseDuration(),
+                        phaseCommand.parameterThresholds()
                 ))
                 .toList();
 

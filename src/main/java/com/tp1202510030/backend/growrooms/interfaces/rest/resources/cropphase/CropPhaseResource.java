@@ -21,5 +21,8 @@ public record CropPhaseResource(
         if (thresholds == null) {
             throw new IllegalArgumentException("thresholds cannot be null");
         }
+        if (thresholds.hasNullValues()) {
+            throw new IllegalArgumentException("All parameter threshold values must be provided and cannot be null");
+        }
     }
 }

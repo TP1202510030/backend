@@ -19,5 +19,8 @@ public record CreateCropPhaseResource(
         if (parameterThresholds == null) {
             throw new IllegalArgumentException("parameterThresholds cannot be null");
         }
+        if (parameterThresholds.hasNullValues()) {
+            throw new IllegalArgumentException("All parameter threshold values must be provided and cannot be null");
+        }
     }
 }

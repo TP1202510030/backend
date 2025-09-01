@@ -45,14 +45,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponseResource> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
-        logger.warn("Client error - Bad Request (404): {}. Request: {}", ex.getMessage(), request.getDescription(false));
+        logger.warn("Client error - Bad Request (400): {}. Request: {}", ex.getMessage(), request.getDescription(false));
         var errorResponse = new ErrorResponseResource(
-                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),
                 request.getDescription(false),
                 new Date()
         );
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
