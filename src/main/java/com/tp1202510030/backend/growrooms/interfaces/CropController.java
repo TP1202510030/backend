@@ -200,7 +200,7 @@ public class CropController {
             @ApiResponse(responseCode = "204", description = "No finished crops found for the requested grow room")
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<List<CropResource>> getFinishedCrops(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<CropResource>> getFinishedCrops(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetFinishedCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
 
@@ -208,9 +208,7 @@ public class CropController {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = crops.stream()
-                .map(CropResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = crops.map(CropResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }
