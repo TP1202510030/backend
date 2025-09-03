@@ -82,7 +82,7 @@ public class MeasurementController {
      * @param pageable The pagination information
      * @return Page of MeasurementResources associated to the crop phase
      */
-    @GetMapping("/phases/{phaseId}/measurements")
+    @GetMapping("/crop-phases/{phaseId}/measurements")
     @Operation(
             summary = "Get measurements by crop phase ID",
             description = "Retrieves a paginated list of measurements associated with a given crop phase ID.",

@@ -21,7 +21,7 @@ public final class SecurityConstants {
     public static final String IS_COMPANY_OWNER = "@securityService.isResourceOwner(authentication, #companyId)";
     public static final String IS_GROW_ROOM_OWNER = "@securityService.isGrowRoomOwner(authentication, #growRoomId)";
     public static final String IS_CROP_OWNER = "@securityService.isCropOwner(authentication, #cropId)";
-    public static final String IS_CROP_PHASE_OWNER = "@securityService.isCropPhaseOwner(authentication, #cropPhaseId)";
+    public static final String IS_CROP_PHASE_OWNER = "@securityService.isCropPhaseOwner(authentication, #phaseId)";
 
     // --- Combined Permissions ---
     public static final String ADMIN_OR_USER_SELF = IS_ADMIN + " or " + IS_USER_SELF;

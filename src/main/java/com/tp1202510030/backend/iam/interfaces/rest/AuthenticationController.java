@@ -26,23 +26,6 @@ public class AuthenticationController {
         this.userCommandService = userCommandService;
     }
 
-    /*
-    @PostMapping("/sign-up")
-    @Operation(summary = "Sign up a new user", description = "Sign up a new user with the provided username, password, and roles.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User created successfully."),
-            @ApiResponse(responseCode = "400", description = "Bad request.")
-    })
-    public ResponseEntity<UserResource> signUp(@RequestBody SignUpResource resource) {
-        var signUpCommand = SignUpCommandFromResourceAssembler.toCommandFromResource(resource);
-        var user = userCommandService.handle(signUpCommand);
-        if (user.isEmpty()) return ResponseEntity.badRequest().build();
-        var userEntity = user.get();
-        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(userEntity);
-        return new ResponseEntity<>(userResource, HttpStatus.CREATED);
-    }
-     */
-
     @PostMapping("/sign-in")
     @Operation(summary = "Sign in a user", description = "Sign in a user with the provided username and password.")
     @ApiResponses(value = {

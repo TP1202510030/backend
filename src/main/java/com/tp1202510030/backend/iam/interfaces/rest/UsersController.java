@@ -86,13 +86,15 @@ public class UsersController {
      * @return The created user.
      */
     @PostMapping
-    @Operation(summary = "Create a new user for a company", description = "Creates a new user associated with a specific company. This endpoint is for admin use only.")
+    @Operation(summary = "Create a new user for a company",
+            description = "Creates a new user associated with a specific company. This endpoint is for admin use only.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created successfully."),
             @ApiResponse(responseCode = "400", description = "Bad request (e.g., company not found, username exists)."),
             @ApiResponse(responseCode = "403", description = "Forbidden.")
     })
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
     public ResponseEntity<UserResource> createUser(@RequestBody CreateUserResource resource) {
         var createUserCommand = CreateUserCommandFromResourceAssembler.toCommandFromResource(resource);
         var user = userCommandService.handle(createUserCommand);

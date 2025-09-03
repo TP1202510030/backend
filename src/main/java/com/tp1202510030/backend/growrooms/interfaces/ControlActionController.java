@@ -78,10 +78,11 @@ public class ControlActionController {
     /**
      * Get control actions by crop phase ID
      *
-     * @param phaseId The crop phase ID to filter crops
-     * @return List of ControlActionResources associated to the crop phase
+     * @param phaseId  The crop phase ID to filter crops
+     * @param pageable The pagination information
+     * @return Page of ControlActionResources associated to the crop phase
      */
-    @GetMapping("/phases/{phaseId}/control-actions")
+    @GetMapping("/crop-phases/{phaseId}/control-actions")
     @Operation(
             summary = "Get control actions by crop phase ID",
             description = "Retrieves a paginated list of controlActions associated with a given crop phase ID.",
