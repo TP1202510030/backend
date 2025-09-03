@@ -127,15 +127,15 @@ public class GrowRoomController {
         return ResponseEntity.ok(resources);
     }
 
-    @GetMapping("/grow-rooms/{id}")
+    @GetMapping("/grow-rooms/{growRoomId}")
     @Operation(
             summary = "Get a grow room by ID",
             description = "Retrieves a grow room by its ID.",
             tags = {"Grow Rooms"}
     )
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<GrowRoomResource> getGrowRoomById(@PathVariable Long id) {
-        var query = new GetGrowRoomByIdQuery(id);
+    public ResponseEntity<GrowRoomResource> getGrowRoomById(@PathVariable Long growRoomId) {
+        var query = new GetGrowRoomByIdQuery(growRoomId);
         var growRoom = growRoomQueryService.handle(query);
 
         if (growRoom.isEmpty()) {
