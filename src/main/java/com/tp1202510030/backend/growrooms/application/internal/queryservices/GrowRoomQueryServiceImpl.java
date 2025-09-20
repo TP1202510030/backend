@@ -1,5 +1,6 @@
 package com.tp1202510030.backend.growrooms.application.internal.queryservices;
 
+import com.tp1202510030.backend.companies.infrastructure.persistence.jpa.repositories.CompanyRepository;
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.GrowRoom;
 import com.tp1202510030.backend.growrooms.domain.model.entities.ControlAction;
 import com.tp1202510030.backend.growrooms.domain.model.entities.Measurement;
@@ -12,6 +13,7 @@ import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.reposit
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.CropRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.GrowRoomRepository;
 import com.tp1202510030.backend.growrooms.infrastructure.persistence.jpa.repositories.MeasurementRepository;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,17 +29,21 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
     private final CropRepository cropRepository;
     private final MeasurementRepository measurementRepository;
     private final ControlActionRepository controlActionRepository;
+    private final CompanyRepository companyRepository;
+
 
     public GrowRoomQueryServiceImpl(
             GrowRoomRepository growRoomRepository,
             CropRepository cropRepository,
             MeasurementRepository measurementRepository,
-            ControlActionRepository controlActionRepository
+            ControlActionRepository controlActionRepository,
+            CompanyRepository companyRepository
     ) {
         this.growRoomRepository = growRoomRepository;
         this.cropRepository = cropRepository;
         this.measurementRepository = measurementRepository;
         this.controlActionRepository = controlActionRepository;
+        this.companyRepository = companyRepository;
     }
 
     @Override
@@ -47,6 +53,10 @@ public class GrowRoomQueryServiceImpl implements GrowRoomQueryService {
 
     @Override
     public Page<GrowRoom> handle(GetGrowRoomsByCompanyIdQuery query, Pageable pageable) {
+        if (!companyRepository.existsById(query.companyId())) {
+            throw new ResourceNotFoundException("Company", "ID", query.companyId().toString());
+        }
+
         Page<GrowRoom> growRooms = growRoomRepository.findAllByCompanyId(query.companyId(), pageable);
         return growRooms.map(this::populateGrowRoomDetails);
     }

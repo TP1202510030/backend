@@ -7,11 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.iot.IotClient;
-import software.amazon.awssdk.services.iot.model.CreateKeysAndCertificateResponse;
-import software.amazon.awssdk.services.iot.model.CreatePolicyRequest;
-import software.amazon.awssdk.services.iot.model.CreateThingRequest;
-import software.amazon.awssdk.services.iot.model.IotException;
+import software.amazon.awssdk.services.iot.model.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -57,6 +55,47 @@ public class AwsIotDeviceProvisioningService implements IotDeviceProvisioningSer
         } catch (IotException e) {
             logger.error("Failed to provision device in AWS IoT. Error: {}", e.getMessage());
             throw new RuntimeException("Failed to provision device in AWS IoT: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void deprovisionDevice(Long companyId, Long growRoomId) {
+        String thingName = "company-%d-growroom-%d".formatted(companyId, growRoomId);
+        String policyName = thingName + "-Policy";
+        logger.info("Starting deprovisioning for IoT Thing: {}", thingName);
+
+        try {
+            List<String> principals = iotClient.listThingPrincipals(req -> req.thingName(thingName)).principals();
+
+            for (String principalArn : principals) {
+                logger.info("Detaching principal {} from thing {}", principalArn, thingName);
+                iotClient.detachThingPrincipal(req -> req.thingName(thingName).principal(principalArn));
+
+                String certificateId = principalArn.substring(principalArn.lastIndexOf('/') + 1);
+
+                logger.info("Detaching policy {} from principal {}", policyName, principalArn);
+                iotClient.detachPolicy(req -> req.policyName(policyName).target(principalArn));
+
+                logger.info("Deactivating certificate {}", certificateId);
+                iotClient.updateCertificate(req -> req.certificateId(certificateId).newStatus(CertificateStatus.INACTIVE));
+
+                logger.info("Deleting certificate {}", certificateId);
+                iotClient.deleteCertificate(req -> req.certificateId(certificateId));
+            }
+
+            logger.info("Deleting policy {}", policyName);
+            iotClient.deletePolicy(req -> req.policyName(policyName));
+
+            logger.info("Deleting thing {}", thingName);
+            iotClient.deleteThing(req -> req.thingName(thingName));
+
+            logger.info("Successfully deprovisioned IoT Thing: {}", thingName);
+
+        } catch (ResourceNotFoundException e) {
+            logger.warn("A resource was not found during deprovisioning for thing {}. It might have been already deleted. Message: {}", thingName, e.getMessage());
+        } catch (IotException e) {
+            logger.error("Failed to deprovision device in AWS IoT for thing: {}. Error: {}", thingName, e.awsErrorDetails().errorMessage());
+            throw new RuntimeException("Failed to deprovision device in AWS IoT: " + e.awsErrorDetails().errorMessage(), e);
         }
     }
 

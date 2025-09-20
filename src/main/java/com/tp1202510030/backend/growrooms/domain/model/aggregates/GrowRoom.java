@@ -92,4 +92,12 @@ public class GrowRoom extends AuditableAbstractAggregateRoot<GrowRoom> {
     public void deactivateCrop() {
         this.hasActiveCrop = false;
     }
+
+    public void changeName(GrowRoomName name) {
+        this.name = name;
+    }
+
+    public void changeImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

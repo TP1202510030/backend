@@ -2,6 +2,7 @@ package com.tp1202510030.backend.growrooms.interfaces;
 
 import com.tp1202510030.backend.growrooms.domain.model.aggregates.Crop;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.AdvanceCropPhaseCommand;
+import com.tp1202510030.backend.growrooms.domain.model.commands.crop.DeleteCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.commands.crop.FinishCropCommand;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.crop.GetCropsByGrowRoomIdQuery;
@@ -211,5 +212,22 @@ public class CropController {
         var resources = crops.map(CropResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
+    }
+
+    @DeleteMapping("/crops/{cropId}")
+    @Operation(
+            summary = "Delete a crop",
+            description = "Marks a grow room as deleted (soft delete). This action is only available to administrators."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Grow room deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden. User is not an admin."),
+            @ApiResponse(responseCode = "404", description = "Grow room not found")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<Void> deleteCrop(@PathVariable Long cropId) {
+        var command = new DeleteCropCommand(cropId);
+        cropCommandService.handle(command);
+        return ResponseEntity.noContent().build();
     }
 }

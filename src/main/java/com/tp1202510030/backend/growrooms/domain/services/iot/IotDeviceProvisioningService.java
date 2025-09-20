@@ -6,4 +6,14 @@ import java.util.Optional;
 
 public interface IotDeviceProvisioningService {
     Optional<DeviceCredentials> provisionDevice(Long companyId, Long growRoomId);
+
+    /**
+     * Deprovisions a device from AWS IoT.
+     * This includes detaching and deleting policies, certificates, and the thing itself.
+     *
+     * @param companyId  The ID of the company owning the grow room.
+     * @param growRoomId The ID of the grow room.
+     * @throws RuntimeException if the deprovisioning process fails.
+     */
+    void deprovisionDevice(Long companyId, Long growRoomId);
 }

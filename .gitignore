@@ -40,3 +40,4 @@ certs
 *.log
 *.class
 src/main/java/.DS_Store
+.DS_Store

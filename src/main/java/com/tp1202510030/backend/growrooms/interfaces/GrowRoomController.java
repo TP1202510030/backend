@@ -1,17 +1,13 @@
 package com.tp1202510030.backend.growrooms.interfaces;
 
+import com.tp1202510030.backend.growrooms.domain.model.commands.growroom.DeleteGrowRoomCommand;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomByIdQuery;
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.CreateGrowRoomResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.DeviceCredentialsResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.GrowRoomResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.UpdateGrowRoomResource;
-import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.CreateGrowRoomCommandFromResourceAssembler;
-import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.DeviceCredentialsResourceFromDomainAssembler;
-import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.GrowRoomResourceFromEntityAssembler;
-import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.UpdateGrowRoomCommandFromResourceAssembler;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.*;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.*;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -106,6 +102,33 @@ public class GrowRoomController {
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
 
+    @PatchMapping("/{growRoomId}")
+    @Operation(
+            summary = "Patch a grow room",
+            description = "Updates one or more properties of a grow room. Only fields provided in the request body will be updated. This action is only available to administrators."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Grow room updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Forbidden. User is not an admin."),
+            @ApiResponse(responseCode = "404", description = "Grow room not found")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<GrowRoomResource> patchGrowRoom(
+            @PathVariable Long growRoomId,
+            @RequestBody PatchGrowRoomResource resource
+    ) {
+        var command = PatchGrowRoomCommandFromResourceAssembler.toCommandFromResource(growRoomId, resource);
+        var patchedGrowRoom = growRoomCommandService.handle(command);
+
+        if (patchedGrowRoom.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var growRoomResource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(patchedGrowRoom.get());
+        return ResponseEntity.ok(growRoomResource);
+    }
+
     @GetMapping("/companies/{companyId}/grow-rooms")
     @Operation(
             summary = "Get grow rooms by company ID",
@@ -136,13 +159,27 @@ public class GrowRoomController {
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
     public ResponseEntity<GrowRoomResource> getGrowRoomById(@PathVariable Long growRoomId) {
         var query = new GetGrowRoomByIdQuery(growRoomId);
-        var growRoom = growRoomQueryService.handle(query);
+        var growRoom = growRoomQueryService.handle(query)
+                .orElseThrow(() -> new ResourceNotFoundException("GrowRoom", "ID", growRoomId.toString()));
 
-        if (growRoom.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        var resource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(growRoom.get());
+        var resource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(growRoom);
         return ResponseEntity.ok(resource);
+    }
+
+    @DeleteMapping("/{growRoomId}")
+    @Operation(
+            summary = "Delete a grow room",
+            description = "Marks a grow room as deleted (soft delete). This action is only available to administrators."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Grow room deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden. User is not an admin."),
+            @ApiResponse(responseCode = "404", description = "Grow room not found")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<Void> deleteGrowRoom(@PathVariable Long growRoomId) {
+        var command = new DeleteGrowRoomCommand(growRoomId);
+        growRoomCommandService.handle(command);
+        return ResponseEntity.noContent().build();
     }
 }
