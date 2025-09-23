@@ -7,6 +7,7 @@ public class SignInCommandFromResourceAssembler {
     public static SignInCommand toCommandFromResource(SignInResource resource) {
         return new SignInCommand(
                 resource.username(),
-                resource.password());
+                resource.password(),
+                resource.clientType());
     }
 }

@@ -1,9 +1,11 @@
 package com.tp1202510030.backend.iam.infrastructure.tokens.jwt.services;
 
 import com.tp1202510030.backend.iam.infrastructure.tokens.jwt.BearerTokenService;
+import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.WebUtils;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
@@ -82,6 +85,12 @@ public class TokenServiceImpl implements BearerTokenService {
         if (isTokenPresentIn(authorizationParameter) && isBearerTokenIn(authorizationParameter)) {
             return extractTokenFrom(authorizationParameter);
         }
+
+        Cookie cookie = WebUtils.getCookie(request, SecurityConstants.AUTH_COOKIE_NAME);
+        if (cookie != null) {
+            return cookie.getValue();
+        }
+
         return null;
     }
 

@@ -10,6 +10,27 @@ public final class SecurityConstants {
     private SecurityConstants() {
     }
 
+    // Webhook Headers
+    public static final String SIGNATURE_HEADER = "x-signature";
+    public static final String REQUEST_ID_HEADER = "x-request-id";
+
+    // HMAC Signature parts
+    public static final String SIGNATURE_TIMESTAMP_KEY = "ts";
+    public static final String SIGNATURE_VERSION_KEY = "v1";
+
+    // HMAC Algorithm
+    public static final String HMAC_ALGORITHM = "HmacSHA256";
+
+    // Redis Keys
+    public static final String WEBHOOK_ID_PREFIX = "webhook_id:";
+    public static final String WEBHOOK_PROCESSED_VALUE = "processed";
+    public static final long WEBHOOK_ID_EXPIRATION_MINUTES = 5;
+
+    // Cookie Configuration
+    public static final String AUTH_COOKIE_NAME = "access_token";
+    public static final String COOKIE_PATH = "/";
+    public static final int COOKIE_MAX_AGE_DAYS = 7;
+
     // --- Role-Based Permissions ---
     public static final String IS_ADMIN = "hasRole('ADMIN')";
     public static final String IS_COMPANY_ADMIN = "hasRole('COMPANY_ADMIN')";

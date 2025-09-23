@@ -2,6 +2,7 @@ package com.tp1202510030.backend.iam.infrastructure.authorization.sfs.configurat
 
 import com.tp1202510030.backend.iam.infrastructure.authorization.sfs.pipeline.ApiKeyAuthenticationFilter;
 import com.tp1202510030.backend.iam.infrastructure.authorization.sfs.pipeline.BearerAuthorizationRequestFilter;
+import com.tp1202510030.backend.iam.infrastructure.authorization.sfs.pipeline.CookieAuthenticationFilter;
 import com.tp1202510030.backend.iam.infrastructure.hashing.bcrypt.BCryptHashingService;
 import com.tp1202510030.backend.iam.infrastructure.tokens.jwt.BearerTokenService;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,6 +54,11 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
+    public CookieAuthenticationFilter cookieAuthenticationFilter() {
+        return new CookieAuthenticationFilter(tokenService, userDetailsService);
+    }
+
+    @Bean
     public ApiKeyAuthenticationFilter apiKeyAuthenticationFilter() {
         return new ApiKeyAuthenticationFilter(apiKeySecret);
     }
@@ -75,6 +81,9 @@ public class WebSecurityConfiguration {
         return hashingService;
     }
 
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         var permittedRequestPatterns = new String[]{
@@ -90,9 +99,10 @@ public class WebSecurityConfiguration {
         // Cross-Origin Resource Sharing configuration
         http.cors(configurer -> configurer.configurationSource(_ -> {
             var cors = new CorsConfiguration();
-            cors.setAllowedOrigins(List.of("*"));
-            cors.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+            cors.setAllowedOrigins(allowedOrigins);
+            cors.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
             cors.setAllowedHeaders(List.of("*"));
+            cors.setAllowCredentials(true);
             return cors;
         }));
         http.csrf(AbstractHttpConfigurer::disable);
