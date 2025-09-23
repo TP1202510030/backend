@@ -5,6 +5,7 @@ import com.tp1202510030.backend.companies.interfaces.rest.resources.company.Upda
 
 public class UpdateCompanyCommandFromResourceAssembler {
     public static UpdateCompanyCommand toCommandFromResource(Long companyId, UpdateCompanyResource resource) {
+
         return new UpdateCompanyCommand(
                 companyId,
                 resource.companyName(),

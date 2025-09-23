@@ -1,18 +1,15 @@
 package com.tp1202510030.backend.companies.interfaces.rest.resources.company;
 
-import com.tp1202510030.backend.companies.domain.model.valueobjects.CompanyName;
-import com.tp1202510030.backend.companies.domain.model.valueobjects.TaxIdentificationNumber;
-
 public record UpdateCompanyResource(
         Long companyId,
-        CompanyName companyName,
-        TaxIdentificationNumber taxIdentificationNumber
+        String companyName,
+        Long taxIdentificationNumber
 ) {
     public UpdateCompanyResource {
         if (companyId == null || companyId <= 0) {
             throw new IllegalArgumentException("companyId cannot be null or negative");
         }
-        if (companyName == null || companyName.companyName().isBlank()) {
+        if (companyName == null || companyName.isBlank()) {
             throw new IllegalArgumentException("companyName cannot be null or empty");
         }
         if (taxIdentificationNumber == null) {

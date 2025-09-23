@@ -1,13 +1,17 @@
 package com.tp1202510030.backend.companies.interfaces;
 
+import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
+import com.tp1202510030.backend.companies.domain.model.queries.company.GetAllCompaniesQuery;
 import com.tp1202510030.backend.companies.domain.model.queries.company.GetCompanyByIdQuery;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyCommandService;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyQueryService;
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.CompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.CreateCompanyResource;
+import com.tp1202510030.backend.companies.interfaces.rest.resources.company.PatchCompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.UpdateCompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CompanyResourceFromEntityAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CreateCompanyCommandFromResourceAssembler;
+import com.tp1202510030.backend.companies.interfaces.rest.transform.company.PatchCompanyCommandFromResourceAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.UpdateCompanyCommandFromResourceAssembler;
 import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,6 +21,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -93,6 +100,33 @@ public class CompanyController {
         return ResponseEntity.ok(updatedCompanyResource);
     }
 
+    @PatchMapping("/{companyId}")
+    @Operation(
+            summary = "Patch a company",
+            description = "Updates one or more properties of a company. Only fields provided in the request body will be updated. This action is only available to administrators."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Company updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "403", description = "Forbidden. User is not an admin."),
+            @ApiResponse(responseCode = "404", description = "Company not found")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<CompanyResource> patchCompany(
+            @PathVariable Long companyId,
+            @RequestBody PatchCompanyResource resource
+    ) {
+        var command = PatchCompanyCommandFromResourceAssembler.toCommandFromResource(companyId, resource);
+        var patchedCompany = companyCommandService.handle(command);
+
+        if (patchedCompany.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        var companyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(patchedCompany.get());
+        return ResponseEntity.ok(companyResource);
+    }
+
     @GetMapping("/{companyId}")
     @Operation(
             summary = "Get company by ID",
@@ -111,4 +145,34 @@ public class CompanyController {
         var companyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(company.get());
         return ResponseEntity.ok(companyResource);
     }
+
+    /**
+     * Get all companies
+     *
+     * @return List of CompanyResources
+     */
+    @GetMapping()
+    @Operation(
+            summary = "Get all companies",
+            description = "Retrieves a list of paginated companies.",
+            tags = {"Companies"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Companies retrieved successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CompanyResource.class))),
+            @ApiResponse(responseCode = "204", description = "No companies found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<Page<CompanyResource>> getAllCompanies(@ParameterObject Pageable pageable) {
+        var query = new GetAllCompaniesQuery();
+        Page<Company> companies = companyQueryService.handle(query, pageable);
+
+        var resources = companies
+                .map(CompanyResourceFromEntityAssembler::toResourceFromEntity);
+
+        return ResponseEntity.ok(resources);
+    }
+
+
 }

@@ -2,6 +2,7 @@ package com.tp1202510030.backend.companies.application.internal.commandservices;
 
 import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
 import com.tp1202510030.backend.companies.domain.model.commands.company.CreateCompanyCommand;
+import com.tp1202510030.backend.companies.domain.model.commands.company.PatchCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.commands.company.UpdateCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.valueobjects.CompanyName;
 import com.tp1202510030.backend.companies.domain.model.valueobjects.TaxIdentificationNumber;
@@ -45,11 +46,13 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
 
     @Override
     public Optional<Company> handle(UpdateCompanyCommand command) {
-        if (companyRepository.existsByNameAndIdIsNot(command.name(), command.companyId()))
-            throw new ResourceAlreadyExistsException("Company", "name", command.name().companyName());
+        CompanyName newName = new CompanyName(command.name());
+        if (companyRepository.existsByNameAndIdIsNot(newName, command.companyId()))
+            throw new ResourceAlreadyExistsException("Company", "name", command.name());
 
-        if (companyRepository.existsByTaxIdentificationNumberAndIdIsNot(command.taxIdentificationNumber(), command.companyId()))
-            throw new ResourceAlreadyExistsException("Company", "TIN", command.taxIdentificationNumber().taxIdentificationNumber().toString());
+        TaxIdentificationNumber newTaxIdentificationNumber = new TaxIdentificationNumber(command.taxIdentificationNumber());
+        if (companyRepository.existsByTaxIdentificationNumberAndIdIsNot(newTaxIdentificationNumber, command.companyId()))
+            throw new ResourceAlreadyExistsException("Company", "TIN", command.taxIdentificationNumber().toString());
 
 
         var companyToUpdate = companyRepository.findById(command.companyId())
@@ -63,6 +66,34 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
             return Optional.of(updatedCompany);
         } catch (Exception e) {
             throw new RuntimeException("Error updating company: %s".formatted(e.getMessage()));
+        }
+    }
+
+    @Override
+    public Optional<Company> handle(PatchCompanyCommand command) {
+        var companyToPatch = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
+
+        command.name().ifPresent(name -> {
+            CompanyName newName = new CompanyName(name);
+            if (companyRepository.existsByNameAndIdIsNot(newName, command.companyId()))
+                throw new ResourceAlreadyExistsException("Company", "name", name);
+        });
+
+        command.taxIdentificationNumber().ifPresent(tin -> {
+            TaxIdentificationNumber newTaxIdentificationNumber = new TaxIdentificationNumber(tin);
+            if (companyRepository.existsByTaxIdentificationNumberAndIdIsNot(newTaxIdentificationNumber, command.companyId()))
+                throw new ResourceAlreadyExistsException("Company", "TIN", tin.toString());
+        });
+
+        try {
+            var patchedCompany = companyRepository.save(companyToPatch.updateInformation(
+                    command.name().orElse(companyToPatch.getCompanyName()),
+                    command.taxIdentificationNumber().orElse(companyToPatch.getTaxIdentificationNumber())
+            ));
+            return Optional.of(patchedCompany);
+        } catch (Exception e) {
+            throw new RuntimeException("Error patching company: %s".formatted(e.getMessage()));
         }
     }
 }

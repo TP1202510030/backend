@@ -30,7 +30,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -174,7 +173,7 @@ public class CropController {
             @ApiResponse(responseCode = "204", description = "No crops found for the grow room")
     })
     @PreAuthorize(SecurityConstants.ADMIN_OR_GROW_ROOM_OWNER)
-    public ResponseEntity<List<CropResource>> getCropsByGrowRoomId(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
+    public ResponseEntity<Page<CropResource>> getCropsByGrowRoomId(@PathVariable Long growRoomId, @ParameterObject Pageable pageable) {
         var query = new GetCropsByGrowRoomIdQuery(growRoomId);
         Page<Crop> crops = cropQueryService.handle(query, pageable);
 
@@ -182,9 +181,8 @@ public class CropController {
             return ResponseEntity.noContent().build();
         }
 
-        var resources = crops.stream()
-                .map(CropResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = crops
+                .map(CropResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
     }

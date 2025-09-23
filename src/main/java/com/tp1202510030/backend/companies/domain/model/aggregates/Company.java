@@ -42,9 +42,9 @@ public class Company extends AuditableAbstractAggregateRoot<Company> {
      * @param taxIdentificationNumber Company gender.
      * @return Company instance.
      */
-    public Company updateInformation(CompanyName name, TaxIdentificationNumber taxIdentificationNumber) {
-        this.name = name;
-        this.taxIdentificationNumber = taxIdentificationNumber;
+    public Company updateInformation(String name, Long taxIdentificationNumber) {
+        this.name = new CompanyName(name);
+        this.taxIdentificationNumber = new TaxIdentificationNumber(taxIdentificationNumber);
         return this;
     }
 }

@@ -102,7 +102,7 @@ public class GrowRoomController {
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
 
-    @PatchMapping("/{growRoomId}")
+    @PatchMapping("/grow-rooms/{growRoomId}")
     @Operation(
             summary = "Patch a grow room",
             description = "Updates one or more properties of a grow room. Only fields provided in the request body will be updated. This action is only available to administrators."
@@ -166,7 +166,7 @@ public class GrowRoomController {
         return ResponseEntity.ok(resource);
     }
 
-    @DeleteMapping("/{growRoomId}")
+    @DeleteMapping("/grow-rooms/{growRoomId}")
     @Operation(
             summary = "Delete a grow room",
             description = "Marks a grow room as deleted (soft delete). This action is only available to administrators."
