@@ -4,13 +4,12 @@ import com.tp1202510030.backend.iam.application.internal.outboundservices.acl.Ia
 import com.tp1202510030.backend.iam.application.internal.outboundservices.hashing.HashingService;
 import com.tp1202510030.backend.iam.application.internal.outboundservices.tokens.TokenService;
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
-import com.tp1202510030.backend.iam.domain.model.commands.CreateUserCommand;
-import com.tp1202510030.backend.iam.domain.model.commands.DeleteUserCommand;
-import com.tp1202510030.backend.iam.domain.model.commands.DeleteUsersByCompanyId;
-import com.tp1202510030.backend.iam.domain.model.commands.SignInCommand;
+import com.tp1202510030.backend.iam.domain.model.commands.*;
+import com.tp1202510030.backend.iam.domain.model.valueobjects.Roles;
 import com.tp1202510030.backend.iam.domain.services.user.UserCommandService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
+import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.springframework.stereotype.Service;
@@ -44,15 +43,15 @@ public class UserCommandServiceImpl implements UserCommandService {
     @Transactional
     public Optional<User> handle(CreateUserCommand command) {
         if (userRepository.existsByUsername(command.username())) {
-            throw new RuntimeException("Username already exists");
+            throw new ResourceAlreadyExistsException("User", "username", command.username());
         }
 
         var company = externalCompanyService.getCompanyById(command.companyId())
-                .orElseThrow(() -> new RuntimeException("Company with ID " + command.companyId() + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
 
         var roles = command.roles().stream()
                 .map(role -> roleRepository.findByName(role.getName())
-                        .orElseThrow(() -> new RuntimeException("Role name not found")))
+                        .orElseThrow(() -> new ResourceNotFoundException("Role", "name", role.getName().name())))
                 .toList();
 
         var user = new User(command.username(), hashingService.encode(command.password()), roles, company);
@@ -83,5 +82,29 @@ public class UserCommandServiceImpl implements UserCommandService {
         var company = externalCompanyService.getCompanyById(command.companyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
         userRepository.deleteAllByCompanyId(company.getId());
+    }
+
+    @Override
+    @Transactional
+    public Optional<User> handle(PatchUserCommand command) {
+        var userToUpdate = userRepository.findById(command.userId())
+                .orElseThrow(() -> new ResourceNotFoundException("User", "ID", command.userId().toString()));
+
+        command.username().ifPresent(username -> {
+            if (userRepository.existsByUsername(username) && !username.equals(userToUpdate.getUsername())) {
+                throw new ResourceAlreadyExistsException("User", "username", username);
+            }
+            userToUpdate.changeUsername(username);
+        });
+
+        command.roles().ifPresent(roleNames -> {
+            var roles = roleNames.stream()
+                    .map(roleName -> roleRepository.findByName(Roles.valueOf(roleName))
+                            .orElseThrow(() -> new ResourceNotFoundException("Role", "name", roleName)))
+                    .toList();
+            userToUpdate.editRoles(roles);
+        });
+
+        return Optional.of(userRepository.save(userToUpdate));
     }
 }

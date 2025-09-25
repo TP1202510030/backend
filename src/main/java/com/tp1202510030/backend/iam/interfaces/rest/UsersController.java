@@ -1,13 +1,16 @@
 package com.tp1202510030.backend.iam.interfaces.rest;
 
 import com.tp1202510030.backend.iam.domain.model.commands.DeleteUserCommand;
+import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersByCompanyIdQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
 import com.tp1202510030.backend.iam.domain.services.user.UserCommandService;
 import com.tp1202510030.backend.iam.domain.services.user.UserQueryService;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.CreateUserResource;
+import com.tp1202510030.backend.iam.interfaces.rest.resources.PatchUserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.UserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.CreateUserCommandFromResourceAssembler;
+import com.tp1202510030.backend.iam.interfaces.rest.transform.PatchUserCommandFromResourceAssembler;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.UserResourceFromEntityAssembler;
 import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,10 +25,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 
 @RestController
-@RequestMapping(value = "/api/v1/users", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "Users", description = "Available User Endpoints")
 public class UsersController {
     private final UserCommandService userCommandService;
@@ -36,7 +40,7 @@ public class UsersController {
         this.userQueryService = userQueryService;
     }
 
-    @GetMapping
+    @GetMapping("/users")
     @Operation(
             summary = "Get all users",
             description = "Get all the users available in the system.",
@@ -59,7 +63,7 @@ public class UsersController {
      * @param userId The id of the user to retrieve.
      * @return The user.
      */
-    @GetMapping(value = "/{userId}")
+    @GetMapping(value = "/users/{userId}")
     @Operation(
             summary = "Get user by id",
             description = "Get the user with the given id.",
@@ -80,13 +84,36 @@ public class UsersController {
         return ResponseEntity.ok(userResource);
     }
 
+    @GetMapping(value = "/companies/{companyId}/users")
+    @Operation(
+            summary = "Get all users by company id",
+            description = "Get all users associated with the given company id.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
+    public ResponseEntity<List<UserResource>> getAllUsersByCompanyId(@PathVariable Long companyId) {
+        var getAllUsersByCompanyIdQuery = new GetAllUsersByCompanyIdQuery(companyId);
+        var users = userQueryService.handle(getAllUsersByCompanyIdQuery);
+
+        if (users.isEmpty() || !users.get().iterator().hasNext()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        var userResources = StreamSupport.stream(users.get().spliterator(), false)
+                .map(UserResourceFromEntityAssembler::toResourceFromEntity)
+                .toList();
+
+        return ResponseEntity.ok(userResources);
+    }
+
+
     /**
      * Create a new user for a company.
      *
      * @param resource The user to create.
      * @return The created user.
      */
-    @PostMapping
+    @PostMapping("/users")
     @Operation(summary = "Create a new user for a company",
             description = "Creates a new user associated with a specific company. This endpoint is for admin use only.",
             security = {@SecurityRequirement(name = "bearerAuth")})
@@ -114,7 +141,7 @@ public class UsersController {
      * @param userId The id of the user to delete.
      * @return No content.
      */
-    @DeleteMapping(value = "/{userId}")
+    @DeleteMapping(value = "/users/{userId}")
     @Operation(
             summary = "Delete a user by id",
             description = "Delete the user with the given id. This endpoint is for admin use only.",
@@ -127,4 +154,23 @@ public class UsersController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping(value = "/users/{userId}")
+    @Operation(
+            summary = "Patch user by id",
+            description = "Patch a user by the provided id.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<UserResource> patchUser(@PathVariable Long userId, @RequestBody PatchUserResource resource) {
+        var patchUserCommand = PatchUserCommandFromResourceAssembler.toCommandFromResource(userId, resource);
+        var user = userCommandService.handle(patchUserCommand);
+
+        if (user.isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
+
+        return ResponseEntity.ok(userResource);
+    }
 }

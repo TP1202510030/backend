@@ -55,4 +55,24 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         var validatedRoles = Role.validateRoleSet(roles);
         this.roles.addAll(validatedRoles);
     }
+
+    /**
+     * Replaces the existing roles of the user with a new set of roles.
+     *
+     * @param roles The new list of roles.
+     */
+    public void editRoles(List<Role> roles) {
+        var validatedRoles = Role.validateRoleSet(roles);
+        this.roles.clear();
+        this.roles.addAll(validatedRoles);
+    }
+
+    /**
+     * Changes the username of the user.
+     *
+     * @param username The new username.
+     */
+    public void changeUsername(String username) {
+        this.username = username;
+    }
 }
