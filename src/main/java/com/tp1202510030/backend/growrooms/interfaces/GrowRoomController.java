@@ -5,8 +5,14 @@ import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowR
 import com.tp1202510030.backend.growrooms.domain.model.queries.growroom.GetGrowRoomsByCompanyIdQuery;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomCommandService;
 import com.tp1202510030.backend.growrooms.domain.services.growroom.GrowRoomQueryService;
-import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.*;
-import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.*;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.CreateGrowRoomResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.DeviceCredentialsResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.GrowRoomResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.resources.growroom.PatchGrowRoomResource;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.CreateGrowRoomCommandFromResourceAssembler;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.DeviceCredentialsResourceFromDomainAssembler;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.GrowRoomResourceFromEntityAssembler;
+import com.tp1202510030.backend.growrooms.interfaces.rest.transform.growroom.PatchGrowRoomCommandFromResourceAssembler;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
 import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,13 +78,13 @@ public class GrowRoomController {
         return new ResponseEntity<>(credentialsResource, HttpStatus.CREATED);
     }
 
-    /**
+    /*
      * Update Grow Room
      *
      * @param growRoomId The grow room id
      * @param resource   The {@link UpdateGrowRoomResource} instance
      * @return The {@link GrowRoomResource} resource for the updated growRoom
-     */
+
     @PutMapping("/grow-rooms/{growRoomId}")
     @Operation(
             summary = "Update grow room",
@@ -101,6 +107,7 @@ public class GrowRoomController {
         var updatedGrowRoomResource = GrowRoomResourceFromEntityAssembler.toResourceFromEntity(updatedGrowRoomEntity);
         return ResponseEntity.ok(updatedGrowRoomResource);
     }
+     */
 
     @PatchMapping("/grow-rooms/{growRoomId}")
     @Operation(

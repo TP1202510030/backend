@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CropDeletionServiceImpl implements CropDeletionService {
-
     private final CropRepository cropRepository;
     private final CropPhaseRepository cropPhaseRepository;
     private final MeasurementRepository measurementRepository;

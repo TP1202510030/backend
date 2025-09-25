@@ -3,7 +3,7 @@ package com.tp1202510030.backend.iam.application.internal.queryservices;
 import com.tp1202510030.backend.iam.domain.model.entities.Role;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllRolesQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetRoleByNameQuery;
-import com.tp1202510030.backend.iam.domain.services.RoleQueryService;
+import com.tp1202510030.backend.iam.domain.services.role.RoleQueryService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import org.springframework.stereotype.Service;
 

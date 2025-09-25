@@ -4,7 +4,7 @@ import com.tp1202510030.backend.iam.application.internal.outboundservices.cookie
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.valueobjects.ClientType;
 import com.tp1202510030.backend.iam.domain.model.valueobjects.Roles;
-import com.tp1202510030.backend.iam.domain.services.UserCommandService;
+import com.tp1202510030.backend.iam.domain.services.user.UserCommandService;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.AuthenticatedUserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.SignInResource;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.AuthenticatedUserResourceFromEntityAssembler;

@@ -2,11 +2,13 @@ package com.tp1202510030.backend.companies.application.internal.commandservices;
 
 import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
 import com.tp1202510030.backend.companies.domain.model.commands.company.CreateCompanyCommand;
+import com.tp1202510030.backend.companies.domain.model.commands.company.DeleteCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.commands.company.PatchCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.commands.company.UpdateCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.valueobjects.CompanyName;
 import com.tp1202510030.backend.companies.domain.model.valueobjects.TaxIdentificationNumber;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyCommandService;
+import com.tp1202510030.backend.companies.domain.services.company.CompanyDeletionService;
 import com.tp1202510030.backend.companies.infrastructure.persistence.jpa.repositories.CompanyRepository;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceAlreadyExistsException;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
@@ -17,9 +19,14 @@ import java.util.Optional;
 @Service
 public class CompanyCommandServiceImpl implements CompanyCommandService {
     private final CompanyRepository companyRepository;
+    private final CompanyDeletionService companyDeletionService;
 
-    public CompanyCommandServiceImpl(CompanyRepository companyRepository) {
+    public CompanyCommandServiceImpl(
+            CompanyRepository companyRepository,
+            CompanyDeletionService companyDeletionService
+    ) {
         this.companyRepository = companyRepository;
+        this.companyDeletionService = companyDeletionService;
     }
 
 
@@ -95,5 +102,13 @@ public class CompanyCommandServiceImpl implements CompanyCommandService {
         } catch (Exception e) {
             throw new RuntimeException("Error patching company: %s".formatted(e.getMessage()));
         }
+    }
+
+    @Override
+    public void handle(DeleteCompanyCommand command) {
+        var companyToDelete = companyRepository.findById(command.companyId())
+                .orElseThrow(() -> new ResourceNotFoundException("Company", "ID", command.companyId().toString()));
+
+        companyDeletionService.deleteCompany(companyToDelete);
     }
 }

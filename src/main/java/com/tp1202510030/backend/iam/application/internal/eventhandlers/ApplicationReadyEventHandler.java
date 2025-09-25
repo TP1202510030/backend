@@ -7,7 +7,7 @@ import com.tp1202510030.backend.iam.application.internal.outboundservices.hashin
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.commands.SeedRolesCommand;
 import com.tp1202510030.backend.iam.domain.model.valueobjects.Roles;
-import com.tp1202510030.backend.iam.domain.services.RoleCommandService;
+import com.tp1202510030.backend.iam.domain.services.role.RoleCommandService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.tp1202510030.backend.iam.domain.services;
+package com.tp1202510030.backend.iam.domain.services.role;
 
 import com.tp1202510030.backend.iam.domain.model.commands.SeedRolesCommand;
 

@@ -1,9 +1,10 @@
 package com.tp1202510030.backend.iam.interfaces.rest;
 
+import com.tp1202510030.backend.iam.domain.model.commands.DeleteUserCommand;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
-import com.tp1202510030.backend.iam.domain.services.UserCommandService;
-import com.tp1202510030.backend.iam.domain.services.UserQueryService;
+import com.tp1202510030.backend.iam.domain.services.user.UserCommandService;
+import com.tp1202510030.backend.iam.domain.services.user.UserQueryService;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.CreateUserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.resources.UserResource;
 import com.tp1202510030.backend.iam.interfaces.rest.transform.CreateUserCommandFromResourceAssembler;
@@ -106,4 +107,24 @@ public class UsersController {
         var userResource = UserResourceFromEntityAssembler.toResourceFromEntity(user.get());
         return new ResponseEntity<>(userResource, HttpStatus.CREATED);
     }
+
+    /**
+     * Delete a user by id.
+     *
+     * @param userId The id of the user to delete.
+     * @return No content.
+     */
+    @DeleteMapping(value = "/{userId}")
+    @Operation(
+            summary = "Delete a user by id",
+            description = "Delete the user with the given id. This endpoint is for admin use only.",
+            security = {@SecurityRequirement(name = "bearerAuth")}
+    )
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<UserResource> deleteUser(@PathVariable Long userId) {
+        var deleteUserCommand = new DeleteUserCommand(userId);
+        userCommandService.handle(deleteUserCommand);
+        return ResponseEntity.noContent().build();
+    }
+
 }

@@ -4,7 +4,7 @@ import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByIdQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetUserByUsernameQuery;
-import com.tp1202510030.backend.iam.domain.services.UserQueryService;
+import com.tp1202510030.backend.iam.domain.services.user.UserQueryService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 

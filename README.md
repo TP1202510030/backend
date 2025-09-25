@@ -145,8 +145,7 @@ cd backend
         3. In the Policy document section, replace the existing content with the following JSON, which grants broad
            permissions for
            development purposes. Note: For production environments, you should follow the principle of least privilege
-           and restrict
-           these permissions as much as possible.
+           and restrict these permissions as much as possible.
        ```json
        {
          "Version": "2012-10-17",
@@ -160,6 +159,7 @@ cd backend
        }
        ```
        Click Create.
+
         4. Go back to the "Create thing" workflow, find the policy you just created, select it, and click Create thing.
     3. Download Certificates:
         1. On the final screen, you will see links to download your new certificates. This is the only time you can

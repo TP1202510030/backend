@@ -1,6 +1,7 @@
 package com.tp1202510030.backend.companies.interfaces;
 
 import com.tp1202510030.backend.companies.domain.model.aggregates.Company;
+import com.tp1202510030.backend.companies.domain.model.commands.company.DeleteCompanyCommand;
 import com.tp1202510030.backend.companies.domain.model.queries.company.GetAllCompaniesQuery;
 import com.tp1202510030.backend.companies.domain.model.queries.company.GetCompanyByIdQuery;
 import com.tp1202510030.backend.companies.domain.services.company.CompanyCommandService;
@@ -8,11 +9,9 @@ import com.tp1202510030.backend.companies.domain.services.company.CompanyQuerySe
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.CompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.CreateCompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.resources.company.PatchCompanyResource;
-import com.tp1202510030.backend.companies.interfaces.rest.resources.company.UpdateCompanyResource;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CompanyResourceFromEntityAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.CreateCompanyCommandFromResourceAssembler;
 import com.tp1202510030.backend.companies.interfaces.rest.transform.company.PatchCompanyCommandFromResourceAssembler;
-import com.tp1202510030.backend.companies.interfaces.rest.transform.company.UpdateCompanyCommandFromResourceAssembler;
 import com.tp1202510030.backend.shared.infrastructure.authorization.SecurityConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -74,13 +73,12 @@ public class CompanyController {
         return ResponseEntity.ok(companyResource);
     }
 
-    /**
+    /*
      * Update company
      *
      * @param companyId The company id
      * @param resource  The {@link UpdateCompanyResource} instance
      * @return The {@link CompanyResource} resource for the updated company
-     */
     @PutMapping("/{companyId}")
     @Operation(summary = "Update company", description = "Update company")
     @ApiResponses(value = {
@@ -99,6 +97,7 @@ public class CompanyController {
         var updatedCompanyResource = CompanyResourceFromEntityAssembler.toResourceFromEntity(updatedCompanyEntity);
         return ResponseEntity.ok(updatedCompanyResource);
     }
+     */
 
     @PatchMapping("/{companyId}")
     @Operation(
@@ -172,6 +171,23 @@ public class CompanyController {
                 .map(CompanyResourceFromEntityAssembler::toResourceFromEntity);
 
         return ResponseEntity.ok(resources);
+    }
+
+    @DeleteMapping("/{companyId}")
+    @Operation(
+            summary = "Delete a company by ID",
+            description = "Deletes a company identified by the provided ID. This action will remove all associated data.",
+            tags = {"Companies"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Company deleted successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = CompanyResource.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized.")
+    })
+    @PreAuthorize(SecurityConstants.IS_ADMIN)
+    public ResponseEntity<Void> deleteCompany(@PathVariable Long companyId) {
+        companyCommandService.handle(new DeleteCompanyCommand(companyId));
+        return ResponseEntity.noContent().build();
     }
 
 

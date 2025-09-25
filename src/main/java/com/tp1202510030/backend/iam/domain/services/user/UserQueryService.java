@@ -1,4 +1,4 @@
-package com.tp1202510030.backend.iam.domain.services;
+package com.tp1202510030.backend.iam.domain.services.user;
 
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersQuery;
@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface UserQueryService {
     List<User> handle(GetAllUsersQuery query);
+
     Optional<User> handle(GetUserByIdQuery query);
+
     Optional<User> handle(GetUserByUsernameQuery query);
 }

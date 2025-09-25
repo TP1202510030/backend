@@ -18,4 +18,6 @@ public interface GrowRoomCommandService {
     void handle(ActivateGrowRoomCropCommand command);
 
     void handle(DeleteGrowRoomCommand command);
+
+    void handle(DeleteAllGrowRoomsByCompanyIdCommand command);
 }

@@ -30,4 +30,16 @@ public interface IamContextFacade {
      * @return The username, if found.
      */
     Optional<String> fetchUsernameByUserId(Long userId);
+
+    /**
+     * Deletes a user by its ID
+     */
+    void deleteUserById(Long userId);
+
+    /**
+     * Deletes all the users from a company by the company ID.
+     *
+     * @param companyId The ID of the company which the users to be deleted are part of.
+     */
+    void deleteAllUsersByCompanyId(Long companyId);
 }

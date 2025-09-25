@@ -3,7 +3,7 @@ package com.tp1202510030.backend.iam.application.internal.commandservices;
 import com.tp1202510030.backend.iam.domain.model.commands.SeedRolesCommand;
 import com.tp1202510030.backend.iam.domain.model.entities.Role;
 import com.tp1202510030.backend.iam.domain.model.valueobjects.Roles;
-import com.tp1202510030.backend.iam.domain.services.RoleCommandService;
+import com.tp1202510030.backend.iam.domain.services.role.RoleCommandService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.RoleRepository;
 import org.springframework.stereotype.Service;
 
