@@ -1,5 +1,6 @@
 package com.tp1202510030.backend.iam.interfaces.rest;
 
+import com.tp1202510030.backend.iam.domain.model.aggregates.User;
 import com.tp1202510030.backend.iam.domain.model.commands.DeleteUserCommand;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersByCompanyIdQuery;
 import com.tp1202510030.backend.iam.domain.model.queries.GetAllUsersQuery;
@@ -18,6 +19,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +29,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 
 @RestController
@@ -91,21 +94,18 @@ public class UsersController {
             security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @PreAuthorize(SecurityConstants.ADMIN_OR_COMPANY_OWNER)
-    public ResponseEntity<List<UserResource>> getAllUsersByCompanyId(@PathVariable Long companyId) {
+    public ResponseEntity<Page<UserResource>> getAllUsersByCompanyId(@PathVariable Long companyId, @ParameterObject Pageable pageable) {
         var getAllUsersByCompanyIdQuery = new GetAllUsersByCompanyIdQuery(companyId);
-        var users = userQueryService.handle(getAllUsersByCompanyIdQuery);
+        Page<User> users = userQueryService.handle(getAllUsersByCompanyIdQuery, pageable);
 
         if (users.isEmpty() || !users.get().iterator().hasNext()) {
             return ResponseEntity.noContent().build();
         }
 
-        var userResources = StreamSupport.stream(users.get().spliterator(), false)
-                .map(UserResourceFromEntityAssembler::toResourceFromEntity)
-                .toList();
+        var resources = users.map(UserResourceFromEntityAssembler::toResourceFromEntity);
 
-        return ResponseEntity.ok(userResources);
+        return ResponseEntity.ok(resources);
     }
-
 
     /**
      * Create a new user for a company.

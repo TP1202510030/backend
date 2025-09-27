@@ -9,6 +9,8 @@ import com.tp1202510030.backend.iam.domain.model.queries.GetUserByUsernameQuery;
 import com.tp1202510030.backend.iam.domain.services.user.UserQueryService;
 import com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories.UserRepository;
 import com.tp1202510030.backend.shared.domain.exceptions.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -43,13 +45,13 @@ public class UserQueryServiceImpl implements UserQueryService {
     }
 
     @Override
-    public Optional<Iterable<User>> handle(GetAllUsersByCompanyIdQuery query) {
+    public Page<User> handle(GetAllUsersByCompanyIdQuery query, Pageable pageable) {
         var company = externalCompanyService.getCompanyById(query.companyId());
 
         if (company.isEmpty()) {
             throw new ResourceNotFoundException("Company", "ID", query.companyId().toString());
         }
 
-        return userRepository.findAllByCompanyId(company.get().getId());
+        return userRepository.findAllByCompanyId(company.get().getId(), pageable);
     }
 }

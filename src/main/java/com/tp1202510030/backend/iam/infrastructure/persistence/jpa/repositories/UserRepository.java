@@ -1,6 +1,8 @@
 package com.tp1202510030.backend.iam.infrastructure.persistence.jpa.repositories;
 
 import com.tp1202510030.backend.iam.domain.model.aggregates.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +16,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     void deleteAllByCompanyId(Long companyId);
 
-    Optional<Iterable<User>> findAllByCompanyId(Long companyId);
+    Page<User> findAllByCompanyId(Long companyId, Pageable pageable);
 }
