@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,6 @@ public class AuthenticationController {
         boolean isAdmin = userEntity.getRoles().stream()
                 .anyMatch(role -> role.getName().equals(Roles.ROLE_ADMIN));
 
-
         String token = authenticatedUser.getRight();
 
         if (resource.clientType() == ClientType.WEB) {
@@ -62,7 +62,9 @@ public class AuthenticationController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
 
-            response.addCookie(cookieService.createAuthCookie(token));
+            var authCookie = cookieService.createAuthCookie(token);
+            response.addHeader(HttpHeaders.SET_COOKIE, authCookie.toString());
+
             var authenticatedUserResource = AuthenticatedUserResourceFromEntityAssembler.toResourceFromEntity(authenticatedUser.getLeft(), null);
             return ResponseEntity.ok(authenticatedUserResource);
         } else {
@@ -77,7 +79,9 @@ public class AuthenticationController {
             @ApiResponse(responseCode = "200", description = "User signed out successfully.")
     })
     public ResponseEntity<Void> signOut(HttpServletResponse response) {
-        response.addCookie(cookieService.createInvalidationCookie());
+        var invalidationCookie = cookieService.createInvalidationCookie();
+        response.addHeader(HttpHeaders.SET_COOKIE, invalidationCookie.toString());
+
         return ResponseEntity.ok().build();
     }
 }
